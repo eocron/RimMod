@@ -14,7 +14,6 @@ namespace RimMod
         {
             var config = new ConfigurationBuilder()
                 .AddJsonFile("appsettings.json", true)
-                .Add(new SimpleTextFileSource("links.txt", "Mods:Links"))
                 .AddCommandLine(args)
                 .Build();
 
@@ -48,10 +47,9 @@ namespace RimMod
 
         static void RegisterAll(IServiceCollection services)
         {
-            services.AddSingleton<ISteamModDownloader, SteamModDownloader>();
+            services.AddSingleton<ISteamModDownloader, SteamWorkshopDownloader>();
             services.AddHttpClient();
-            services.AddSingleton<ModDownloadSettings>(x => x.GetRequiredService<IConfigurationRoot>().GetSection("Mods").Get<ModDownloadSettings>());
-            services.AddSingleton<IGameModDirectoryDetector, GameModDirectoryDetector>();
+            services.AddSingleton<ModDownloadSettings>(x => x.GetRequiredService<IConfigurationRoot>().Get<ModDownloadSettings>());
         }
     }
 }

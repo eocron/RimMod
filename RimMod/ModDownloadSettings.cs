@@ -1,12 +1,11 @@
-﻿using System.Collections.Generic;
-
-namespace RimMod
+﻿namespace RimMod
 {
     public class ModDownloadSettings
     {
-        public List<string> Links { get; set; }
         public string SteamWorkshopLink { get; set; }
-        public string OutputFolder { get; set; }
+        public string ModFolder { get; set; }
+
+        public string ModLinks { get; set; }
         public bool CleanOutOtherMods { get; set; }
         public bool OverwriteFiles { get; set; }
     }

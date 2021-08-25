@@ -13,34 +13,33 @@ using System.Web;
 
 namespace RimMod
 {
-    internal sealed class SteamModDownloader : ISteamModDownloader
+    internal sealed class SteamWorkshopDownloader : ISteamModDownloader
     {
         private readonly ModDownloadSettings _settings;
         private readonly IHttpClientFactory _httpClientFactory;
-        private readonly ILogger<SteamModDownloader> _logger;
-        private readonly IGameModDirectoryDetector _detector;
+        private readonly ILogger<SteamWorkshopDownloader> _logger;
         private readonly string RequestUrl = "/api/download/request";
         private readonly string StatusUrl = "/api/download/status";
         private readonly string TransmitUrl = "/api/download/transmit?uuid=";
         private readonly TimeSpan _jobTimeout = TimeSpan.FromSeconds(10);
         private readonly TimeSpan _jobStatusCheckInterval = TimeSpan.FromSeconds(1);
         private readonly string _baseAddress;
-        public SteamModDownloader(ModDownloadSettings settings, IHttpClientFactory httpClientFactory, ILogger<SteamModDownloader> logger, IGameModDirectoryDetector detector)
+        public SteamWorkshopDownloader(ModDownloadSettings settings, IHttpClientFactory httpClientFactory, ILogger<SteamWorkshopDownloader> logger)
         {
             _settings = settings;
             _httpClientFactory = httpClientFactory;
             _logger = logger;
-            _detector = detector;
             _baseAddress = _settings.SteamWorkshopLink ?? throw new ArgumentNullException(nameof(_settings.SteamWorkshopLink));
         }
 
         public async Task RunAsync(CancellationToken cancellationToken)
         {
-            var outputFolder = _settings.OutputFolder ?? (await _detector.Detect(cancellationToken)) ?? throw new ArgumentNullException(nameof(_settings.OutputFolder));
+            var outputFolder = _settings.ModFolder ?? throw new ArgumentNullException(nameof(_settings.ModFolder));
+            var modLinks = GetModLinks(_settings.ModLinks ?? throw new ArgumentNullException(nameof(_settings.ModLinks)));
             using var client = _httpClientFactory.CreateClient();
             client.BaseAddress = new Uri(_baseAddress);
             var exceptions = new List<string>();
-            foreach (var link in _settings.Links)
+            foreach (var link in modLinks)
             {
                 cancellationToken.ThrowIfCancellationRequested();
                 var uri = new Uri(link);
@@ -54,6 +53,22 @@ namespace RimMod
 
             if(_settings.CleanOutOtherMods)
                 DeleteAllExcept(outputFolder, exceptions);
+        }
+
+        private List<string> GetModLinks(string modLinksFilePath)
+        {
+            return File.ReadAllLines(modLinksFilePath)
+                .Select(x => TrimCommentsAndWhitespaces(x))
+                .Where(x => !string.IsNullOrWhiteSpace(x))
+                .ToList();
+        }
+
+        private string TrimCommentsAndWhitespaces(string input)
+        {
+            var commentIdx = input.IndexOf("#");
+            if (commentIdx >= 0)
+                input = input.Substring(0, commentIdx);
+            return input.Trim();
         }
 
         private void DeleteAllExcept(string folderPath, List<string> exceptions)
@@ -75,6 +90,8 @@ namespace RimMod
             var tmpFileName = Path.Combine(tmpFolder, fileName);
             var tmpExtractedFolderPath = Path.Combine(tmpFileName + "_extracted");
             var finalFolderPath = Path.Combine(folderPath, Path.GetFileNameWithoutExtension(fileName));
+            if (Directory.Exists(tmpFolder))
+                Directory.Delete(tmpFolder, true);
             try
             {
                 Directory.CreateDirectory(tmpFolder);
