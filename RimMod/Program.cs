@@ -26,7 +26,7 @@ namespace RimMod
                 x.AddFilter("System.Net.Http.HttpClient", x => false);
             });
             collection.AddSingleton(config);
-            RegisterAll(collection);
+            RimModConfigurator.RegisterAll(collection);
             using (var provider = collection.BuildServiceProvider())
             {
                 try
@@ -43,13 +43,6 @@ namespace RimMod
                     cts.Cancel();
                 }
             }
-        }
-
-        static void RegisterAll(IServiceCollection services)
-        {
-            services.AddSingleton<ISteamModDownloader, SteamWorkshopDownloader>();
-            services.AddHttpClient();
-            services.AddSingleton<ModDownloadSettings>(x => x.GetRequiredService<IConfigurationRoot>().Get<ModDownloadSettings>());
         }
     }
 }

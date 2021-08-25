@@ -35,24 +35,47 @@ namespace RimMod
         public async Task RunAsync(CancellationToken cancellationToken)
         {
             var outputFolder = _settings.ModFolder ?? throw new ArgumentNullException(nameof(_settings.ModFolder));
-            var modLinks = GetModLinks(_settings.ModLinks ?? throw new ArgumentNullException(nameof(_settings.ModLinks)));
+            var modFileIds = GetModLinks(_settings.ModLinks ?? throw new ArgumentNullException(nameof(_settings.ModLinks)))
+                .Select(x=> {
+                    var uri = new Uri(x);
+                    var parameters = HttpUtility.ParseQueryString(uri.Query);
+                    var fileId = long.Parse(parameters["id"]);
+                    return fileId;
+                })
+                .Where(x=> x > 0)
+                .Distinct()
+                .ToList();
+
+            Directory.CreateDirectory(outputFolder);
+
+            var fjoin = Directory.GetDirectories(outputFolder, "*", SearchOption.TopDirectoryOnly)
+                .FullOuterJoin(modFileIds, x => Path.GetFileName(x), x => x.ToString(), (o, n, k) => new { o, n, k })
+                .ToList();
+
             using var client = _httpClientFactory.CreateClient();
             client.BaseAddress = new Uri(_baseAddress);
-            var exceptions = new List<string>();
-            foreach (var link in modLinks)
+            foreach (var obj in fjoin)
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                var uri = new Uri(link);
-                var parameters = HttpUtility.ParseQueryString(uri.Query);
-                var fileId = long.Parse(parameters["id"]);
-
-                var downloadLink = await GetDownloadLink(client, fileId, cancellationToken).ConfigureAwait(false);
-                var modFolderPath = await DownloadMod(client, downloadLink, outputFolder, cancellationToken).ConfigureAwait(false);
-                exceptions.Add(modFolderPath);
+                if (obj.o != null && obj.n != 0 && _settings.Mode.HasFlag(UpdateMode.Update))//update
+                {
+                    var downloadLink = await GetDownloadLink(client, obj.n, cancellationToken).ConfigureAwait(false);
+                    await DownloadMod(client, downloadLink, outputFolder, obj.n.ToString(), cancellationToken).ConfigureAwait(false);
+                    _logger.LogInformation($"Updated mod {obj.n}");
+                }
+                else if(obj.o == null && obj.n != 0 && _settings.Mode.HasFlag(UpdateMode.Create))//create
+                {
+                    var downloadLink = await GetDownloadLink(client, obj.n, cancellationToken).ConfigureAwait(false);
+                    await DownloadMod(client, downloadLink, outputFolder, obj.n.ToString(), cancellationToken).ConfigureAwait(false);
+                    _logger.LogInformation($"Added mod {obj.n}");
+                }
+                else if(obj.o != null && obj.n == 0 && _settings.Mode.HasFlag(UpdateMode.Delete))//delete
+                {
+                    Directory.Delete(obj.o, true);
+                    _logger.LogInformation($"Deleted mod {obj.k}");
+                }
             }
 
-            if(_settings.CleanOutOtherMods)
-                DeleteAllExcept(outputFolder, exceptions);
         }
 
         private List<string> GetModLinks(string modLinksFilePath)
@@ -71,46 +94,37 @@ namespace RimMod
             return input.Trim();
         }
 
-        private void DeleteAllExcept(string folderPath, List<string> exceptions)
-        {
-            var toDelete = Directory.GetDirectories(folderPath, "*", SearchOption.TopDirectoryOnly).Except(exceptions);
-            foreach (var d in toDelete)
-                Directory.Delete(d);
-        }
-
-        private async Task<string> DownloadMod(HttpClient client, string uri, string folderPath, CancellationToken cancellationToken)
+        private async Task<string> DownloadMod(HttpClient client, string uri, string folderPath, string modName, CancellationToken cancellationToken)
         {
             Directory.CreateDirectory(folderPath);
 
             using var response = await client.GetAsync(uri, HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
             response.EnsureSuccessStatusCode();
-            var fileName = response.Content.Headers.ContentDisposition.FileName;
-            var tmpFolder = Path.Combine(folderPath, fileName + "_tmp");
+            var tmpFolder = Path.Combine(folderPath, modName + "_tmp");
 
-            var tmpFileName = Path.Combine(tmpFolder, fileName);
+            var tmpFileName = Path.Combine(tmpFolder, modName);
             var tmpExtractedFolderPath = Path.Combine(tmpFileName + "_extracted");
-            var finalFolderPath = Path.Combine(folderPath, Path.GetFileNameWithoutExtension(fileName));
+            var finalFolderPath = Path.Combine(folderPath, modName);
+
             if (Directory.Exists(tmpFolder))
                 Directory.Delete(tmpFolder, true);
             try
             {
                 Directory.CreateDirectory(tmpFolder);
                 Directory.CreateDirectory(tmpExtractedFolderPath);
-                _logger.LogInformation($"Downloading {uri}...");
+                _logger.LogInformation($"Downloading {modName}...");
                 using (var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false))
                 using (var tmpStream = File.OpenWrite(tmpFileName))
                 {
                     await stream.CopyToAsync(tmpStream, cancellationToken).ConfigureAwait(false);
                 }
-                _logger.LogInformation($"Extracting {uri}...");
+                _logger.LogInformation($"Extracting {modName}...");
                 ZipFile.ExtractToDirectory(tmpFileName, tmpExtractedFolderPath, true);
 
-                _logger.LogInformation($"Updating {uri}...");
-                if (_settings.OverwriteFiles)
-                    if (Directory.Exists(finalFolderPath))
-                        Directory.Delete(finalFolderPath, true);
+                if (Directory.Exists(finalFolderPath))
+                    Directory.Delete(finalFolderPath, true);
                 Directory.Move(tmpExtractedFolderPath, finalFolderPath);
-                _logger.LogInformation($"Done {uri}.");
+                _logger.LogInformation($"Done {modName}.");
                 return finalFolderPath;
             }
             finally
@@ -125,7 +139,6 @@ namespace RimMod
             _logger.LogInformation($"Preparing {fileId}...");
             var uuid = await InitializeDownloadJob(client, fileId, cancellationToken).ConfigureAwait(false);
 
-            _logger.LogDebug($"Retrieved job id {uuid} for {fileId}");
             using var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
             cts.CancelAfter(_jobTimeout);
             while (true)

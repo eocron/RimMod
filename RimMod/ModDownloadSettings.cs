@@ -4,9 +4,7 @@
     {
         public string SteamWorkshopLink { get; set; }
         public string ModFolder { get; set; }
-
         public string ModLinks { get; set; }
-        public bool CleanOutOtherMods { get; set; }
-        public bool OverwriteFiles { get; set; }
+        public UpdateMode Mode { get; set; }
     }
 }
