@@ -19,7 +19,7 @@ namespace RimMod
             _httpClientFactory = httpClientFactory;
         }
 
-        public async Task<ModDetails> GetDetails(long fileId, CancellationToken cancellationToken)
+        public async Task<ModDetails> GetRemoteDetails(long fileId, CancellationToken cancellationToken)
         {
             var form = new FormUrlEncodedContent(new Dictionary<string, string> {
                 {"itemcount","1" },
@@ -33,7 +33,7 @@ namespace RimMod
             return obj;
         }
 
-        public async Task<ModDetails> GetDetails(string folder, CancellationToken cancellationToken)
+        public async Task<ModDetails> GetLocalDetails(string folder, CancellationToken cancellationToken)
         {
             var path = Path.Combine(folder, "update_info.json");
             if (!File.Exists(path))
@@ -43,7 +43,7 @@ namespace RimMod
             return JsonConvert.DeserializeObject<ModDetails>(json);
         }
 
-        public async Task SaveDetails(string folder, ModDetails details, CancellationToken cancellationToken)
+        public async Task SaveLocalDetails(string folder, ModDetails details, CancellationToken cancellationToken)
         {
             var path = Path.Combine(folder, "update_info.json");
             await File.WriteAllTextAsync(path, JsonConvert.SerializeObject(details), cancellationToken).ConfigureAwait(false);

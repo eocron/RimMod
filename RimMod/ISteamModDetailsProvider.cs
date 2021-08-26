@@ -6,8 +6,8 @@ namespace RimMod
 {
     public interface ISteamModDetailsProvider
     {
-        Task<ModDetails> GetDetails(long fileId, CancellationToken cancellationToken);
-        Task<ModDetails> GetDetails(string folder, CancellationToken cancellationToken);
-        Task SaveDetails(string folder, ModDetails details, CancellationToken cancellationToken);
+        Task<ModDetails> GetRemoteDetails(long fileId, CancellationToken cancellationToken);
+        Task<ModDetails> GetLocalDetails(string folder, CancellationToken cancellationToken);
+        Task SaveLocalDetails(string folder, ModDetails details, CancellationToken cancellationToken);
     }
 }

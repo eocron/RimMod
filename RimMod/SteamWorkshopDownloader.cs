@@ -49,7 +49,7 @@ namespace RimMod
                 .Distinct()
                 .OrderBy(x=> x)
                 .Select(async x => {
-                    var d = await _detailsProvider.GetDetails(x, cancellationToken).ConfigureAwait(false);
+                    var d = await _detailsProvider.GetRemoteDetails(x, cancellationToken).ConfigureAwait(false);
                     var escapedName = string.Join("", d.title.Split(Path.GetInvalidPathChars().Concat(Path.GetInvalidFileNameChars()).ToArray(), StringSplitOptions.RemoveEmptyEntries));
                     return new { path = Path.Combine(outputFolder, escapedName), details = d };
                 })
@@ -59,7 +59,7 @@ namespace RimMod
 
             var localModDetails = await Task.WhenAll(Directory.GetDirectories(outputFolder, "*", SearchOption.TopDirectoryOnly)
                 .Select(async x => {
-                    var d = await _detailsProvider.GetDetails(x, cancellationToken).ConfigureAwait(false);
+                    var d = await _detailsProvider.GetLocalDetails(x, cancellationToken).ConfigureAwait(false);
                     return new { path = x, details = d };
                 })
                 .ToList()).ConfigureAwait(false);
@@ -142,7 +142,7 @@ namespace RimMod
                 }
                 _logger.LogDebug($"Extracting {modName}...");
                 ZipFile.ExtractToDirectory(tmpFileName, tmpExtractedFolderPath, true);
-                await _detailsProvider.SaveDetails(tmpExtractedFolderPath, details, cancellationToken).ConfigureAwait(false);
+                await _detailsProvider.SaveLocalDetails(tmpExtractedFolderPath, details, cancellationToken).ConfigureAwait(false);
 
                 //replace original
                 if (Directory.Exists(finalFolderPath))
