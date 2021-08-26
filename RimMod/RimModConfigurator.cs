@@ -10,6 +10,7 @@ namespace RimMod
             services.AddSingleton<ISteamModDownloader, SteamWorkshopDownloader>();
             services.AddHttpClient();
             services.AddSingleton<ModDownloadSettings>(x => x.GetRequiredService<IConfigurationRoot>().Get<ModDownloadSettings>());
+            services.AddSingleton<ISteamModDetailsProvider, SteamModDetailsProvider>();
         }
     }
 }

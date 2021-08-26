@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
@@ -18,64 +19,86 @@ namespace RimMod
         private readonly ModDownloadSettings _settings;
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly ILogger<SteamWorkshopDownloader> _logger;
+        private readonly ISteamModDetailsProvider _detailsProvider;
         private readonly string RequestUrl = "/api/download/request";
         private readonly string StatusUrl = "/api/download/status";
         private readonly string TransmitUrl = "/api/download/transmit?uuid=";
         private readonly TimeSpan _jobTimeout = TimeSpan.FromSeconds(10);
         private readonly TimeSpan _jobStatusCheckInterval = TimeSpan.FromSeconds(1);
         private readonly string _baseAddress;
-        public SteamWorkshopDownloader(ModDownloadSettings settings, IHttpClientFactory httpClientFactory, ILogger<SteamWorkshopDownloader> logger)
+
+        public SteamWorkshopDownloader(ModDownloadSettings settings, IHttpClientFactory httpClientFactory, ILogger<SteamWorkshopDownloader> logger, ISteamModDetailsProvider detailsProvider)
         {
             _settings = settings;
             _httpClientFactory = httpClientFactory;
             _logger = logger;
+            _detailsProvider = detailsProvider;
             _baseAddress = _settings.SteamWorkshopLink ?? throw new ArgumentNullException(nameof(_settings.SteamWorkshopLink));
         }
 
         public async Task RunAsync(CancellationToken cancellationToken)
         {
             var outputFolder = _settings.ModFolder ?? throw new ArgumentNullException(nameof(_settings.ModFolder));
-            var modFileIds = GetModLinks(_settings.ModLinks ?? throw new ArgumentNullException(nameof(_settings.ModLinks)))
+            var remoteModDetails = await Task.WhenAll(GetModLinks(_settings.ModLinks ?? throw new ArgumentNullException(nameof(_settings.ModLinks)))
                 .Select(x=> {
                     var uri = new Uri(x);
                     var parameters = HttpUtility.ParseQueryString(uri.Query);
                     var fileId = long.Parse(parameters["id"]);
                     return fileId;
                 })
-                .Where(x=> x > 0)
                 .Distinct()
-                .ToList();
+                .OrderBy(x=> x)
+                .Select(async x => {
+                    var d = await _detailsProvider.GetDetails(x, cancellationToken).ConfigureAwait(false);
+                    var escapedName = string.Join("", d.title.Split(Path.GetInvalidPathChars().Concat(Path.GetInvalidFileNameChars()).ToArray(), StringSplitOptions.RemoveEmptyEntries));
+                    return new { path = Path.Combine(outputFolder, escapedName), details = d };
+                })
+                .ToList()).ConfigureAwait(false);
 
             Directory.CreateDirectory(outputFolder);
 
-            var fjoin = Directory.GetDirectories(outputFolder, "*", SearchOption.TopDirectoryOnly)
-                .FullOuterJoin(modFileIds, x => Path.GetFileName(x), x => x.ToString(), (o, n, k) => new { o, n, k })
+            var localModDetails = await Task.WhenAll(Directory.GetDirectories(outputFolder, "*", SearchOption.TopDirectoryOnly)
+                .Select(async x => {
+                    var d = await _detailsProvider.GetDetails(x, cancellationToken).ConfigureAwait(false);
+                    return new { path = x, details = d };
+                })
+                .ToList()).ConfigureAwait(false);
+
+            var fjoin = localModDetails
+                .FullOuterJoin(remoteModDetails, x => x.path, x => x.path, (o, n, k) => new { o, n, k })
                 .ToList();
 
             using var client = _httpClientFactory.CreateClient();
+            using var steamClient = _httpClientFactory.CreateClient();
+            
             client.BaseAddress = new Uri(_baseAddress);
-            foreach (var obj in fjoin)
+
+            var tasks = fjoin.Select(async obj =>
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                if (obj.o != null && obj.n != 0 && _settings.Mode.HasFlag(UpdateMode.Update))//update
+                if (obj.o != null && obj.n != null && _settings.Mode.HasFlag(UpdateMode.Update))//update
                 {
-                    var downloadLink = await GetDownloadLink(client, obj.n, cancellationToken).ConfigureAwait(false);
-                    await DownloadMod(client, downloadLink, outputFolder, obj.n.ToString(), cancellationToken).ConfigureAwait(false);
-                    _logger.LogInformation($"Updated mod {obj.n}");
+                    if (obj.o.details.time_updated != obj.n.details.time_updated)
+                    {
+                        var downloadLink = await GetDownloadLink(client, obj.n.details, cancellationToken).ConfigureAwait(false);
+                        await DownloadMod(client, downloadLink, outputFolder, obj.n.details, obj.n.path, cancellationToken).ConfigureAwait(false);
+                        _logger.LogInformation($"Updated mod {obj.n}");
+                    }
                 }
-                else if(obj.o == null && obj.n != 0 && _settings.Mode.HasFlag(UpdateMode.Create))//create
+                else if (obj.o == null && obj.n != null && _settings.Mode.HasFlag(UpdateMode.Create))//create
                 {
-                    var downloadLink = await GetDownloadLink(client, obj.n, cancellationToken).ConfigureAwait(false);
-                    await DownloadMod(client, downloadLink, outputFolder, obj.n.ToString(), cancellationToken).ConfigureAwait(false);
+                    var downloadLink = await GetDownloadLink(client, obj.n.details, cancellationToken).ConfigureAwait(false);
+                    await DownloadMod(client, downloadLink, outputFolder, obj.n.details, obj.n.path, cancellationToken).ConfigureAwait(false);
                     _logger.LogInformation($"Added mod {obj.n}");
                 }
-                else if(obj.o != null && obj.n == 0 && _settings.Mode.HasFlag(UpdateMode.Delete))//delete
+                else if (obj.o != null && obj.n == null && _settings.Mode.HasFlag(UpdateMode.Delete))//delete
                 {
-                    Directory.Delete(obj.o, true);
+                    Directory.Delete(obj.o.path, true);
                     _logger.LogInformation($"Deleted mod {obj.k}");
                 }
-            }
 
+            }).ToList();
+            await Task.WhenAll(tasks).ConfigureAwait(false);
         }
 
         private List<string> GetModLinks(string modLinksFilePath)
@@ -94,17 +117,16 @@ namespace RimMod
             return input.Trim();
         }
 
-        private async Task<string> DownloadMod(HttpClient client, string uri, string folderPath, string modName, CancellationToken cancellationToken)
+        private async Task<string> DownloadMod(HttpClient client, string uri, string folderPath, ModDetails details, string finalFolderPath, CancellationToken cancellationToken)
         {
             Directory.CreateDirectory(folderPath);
-
+            var modName = Path.GetFileName(finalFolderPath);
             using var response = await client.GetAsync(uri, HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
             response.EnsureSuccessStatusCode();
             var tmpFolder = Path.Combine(folderPath, modName + "_tmp");
 
             var tmpFileName = Path.Combine(tmpFolder, modName);
             var tmpExtractedFolderPath = Path.Combine(tmpFileName + "_extracted");
-            var finalFolderPath = Path.Combine(folderPath, modName);
 
             if (Directory.Exists(tmpFolder))
                 Directory.Delete(tmpFolder, true);
@@ -112,19 +134,21 @@ namespace RimMod
             {
                 Directory.CreateDirectory(tmpFolder);
                 Directory.CreateDirectory(tmpExtractedFolderPath);
-                _logger.LogInformation($"Downloading {modName}...");
+                _logger.LogDebug($"Downloading {modName}...");
                 using (var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false))
                 using (var tmpStream = File.OpenWrite(tmpFileName))
                 {
                     await stream.CopyToAsync(tmpStream, cancellationToken).ConfigureAwait(false);
                 }
-                _logger.LogInformation($"Extracting {modName}...");
+                _logger.LogDebug($"Extracting {modName}...");
                 ZipFile.ExtractToDirectory(tmpFileName, tmpExtractedFolderPath, true);
+                await _detailsProvider.SaveDetails(tmpExtractedFolderPath, details, cancellationToken).ConfigureAwait(false);
 
+                //replace original
                 if (Directory.Exists(finalFolderPath))
                     Directory.Delete(finalFolderPath, true);
                 Directory.Move(tmpExtractedFolderPath, finalFolderPath);
-                _logger.LogInformation($"Done {modName}.");
+                _logger.LogDebug($"Done {modName}.");
                 return finalFolderPath;
             }
             finally
@@ -134,10 +158,12 @@ namespace RimMod
             }
         }
 
-        private async Task<string> GetDownloadLink(HttpClient client, long fileId, CancellationToken cancellationToken)
+
+
+        private async Task<string> GetDownloadLink(HttpClient client, ModDetails details, CancellationToken cancellationToken)
         {
-            _logger.LogInformation($"Preparing {fileId}...");
-            var uuid = await InitializeDownloadJob(client, fileId, cancellationToken).ConfigureAwait(false);
+            _logger.LogDebug($"Preparing {details.title}...");
+            var uuid = await InitializeDownloadJob(client, details.publishedfileid, cancellationToken).ConfigureAwait(false);
 
             using var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
             cts.CancelAfter(_jobTimeout);
