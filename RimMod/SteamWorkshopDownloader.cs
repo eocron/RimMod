@@ -78,7 +78,7 @@ namespace RimMod
                 cancellationToken.ThrowIfCancellationRequested();
                 if (obj.o != null && obj.n != null && _settings.Mode.HasFlag(UpdateMode.Update))//update
                 {
-                    if (obj.o.details.time_updated != obj.n.details.time_updated)
+                    if (!obj.o.details.Equals(obj.n.details))
                     {
                         var downloadLink = await GetDownloadLink(client, obj.n.details, cancellationToken).ConfigureAwait(false);
                         await DownloadMod(client, downloadLink, outputFolder, obj.n.details, obj.n.path, cancellationToken).ConfigureAwait(false);
