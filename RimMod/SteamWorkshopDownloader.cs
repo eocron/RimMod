@@ -82,14 +82,14 @@ namespace RimMod
                     {
                         var downloadLink = await GetDownloadLink(client, obj.n.details, cancellationToken).ConfigureAwait(false);
                         await DownloadMod(client, downloadLink, outputFolder, obj.n.details, obj.n.path, cancellationToken).ConfigureAwait(false);
-                        _logger.LogInformation($"Updated mod {obj.n}");
+                        _logger.LogInformation($"Updated mod {obj.k}");
                     }
                 }
                 else if (obj.o == null && obj.n != null && _settings.Mode.HasFlag(UpdateMode.Create))//create
                 {
                     var downloadLink = await GetDownloadLink(client, obj.n.details, cancellationToken).ConfigureAwait(false);
                     await DownloadMod(client, downloadLink, outputFolder, obj.n.details, obj.n.path, cancellationToken).ConfigureAwait(false);
-                    _logger.LogInformation($"Added mod {obj.n}");
+                    _logger.LogInformation($"Added mod {obj.k}");
                 }
                 else if (obj.o != null && obj.n == null && _settings.Mode.HasFlag(UpdateMode.Delete))//delete
                 {
