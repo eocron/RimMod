@@ -84,6 +84,8 @@ namespace RimMod
                         await DownloadMod(client, downloadLink, outputFolder, obj.n.details, obj.n.path, cancellationToken).ConfigureAwait(false);
                         _logger.LogInformation($"Updated mod {obj.k}");
                     }
+                    else
+                        _logger.LogInformation($"Up to date mod {obj.k}");
                 }
                 else if (obj.o == null && obj.n != null && _settings.Mode.HasFlag(UpdateMode.Create))//create
                 {
