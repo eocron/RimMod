@@ -5,7 +5,7 @@ Rimworld simple console mod updater
 # Usage
 
  - Paste all steam workshop links in links.txt file.
- - Edit path to mod folder
+ - Edit path to mod folder in appsettings.json
  - Run tool
 
 You can also run it from console:
