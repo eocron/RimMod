@@ -23,13 +23,14 @@ namespace RimMod
         private readonly string RequestUrl = "/api/download/request";
         private readonly string StatusUrl = "/api/download/status";
         private readonly string TransmitUrl = "/api/download/transmit?uuid=";
-        private readonly TimeSpan _jobTimeout = TimeSpan.FromSeconds(10);
+        private readonly TimeSpan _jobTimeout;
         private readonly TimeSpan _jobStatusCheckInterval = TimeSpan.FromSeconds(1);
         private readonly string _baseAddress;
 
         public SteamWorkshopDownloader(ModDownloadSettings settings, IHttpClientFactory httpClientFactory, ILogger<SteamWorkshopDownloader> logger, ISteamModDetailsProvider detailsProvider)
         {
             _settings = settings;
+            _jobTimeout = _settings.JobTimeout;
             _httpClientFactory = httpClientFactory;
             _logger = logger;
             _detailsProvider = detailsProvider;
