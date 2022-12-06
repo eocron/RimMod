@@ -4,6 +4,7 @@ using Microsoft.Extensions.Logging;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging.Console;
 using RimMod.Workshop;
 using RimMod.IoC;
 
@@ -15,7 +16,7 @@ namespace RimMod
         static async Task Main(string[] args)
         {
             var config = new ConfigurationBuilder()
-                .AddJsonFile("appsettings.json", true)
+                .AddJsonFile("appsettings.json", false)
                 .AddCommandLine(args)
                 .Build();
 
@@ -24,8 +25,12 @@ namespace RimMod
             collection.AddLogging(x =>
             {
                 x.ClearProviders();
-                x.AddConsole();
-                x.AddFilter("System.Net.Http.HttpClient", x => false);
+                x.AddConfiguration(config.GetSection("Logging"));
+                x.AddSimpleConsole(o =>
+                {
+                    o.SingleLine = true;
+                    o.ColorBehavior = LoggerColorBehavior.Enabled;
+                });
             });
             collection.AddSingleton(config);
             ApplicationConfigurator.Configure(collection);

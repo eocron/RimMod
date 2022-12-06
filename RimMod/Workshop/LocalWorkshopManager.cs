@@ -22,7 +22,7 @@ namespace RimMod.Workshop
             return Path.Combine(_folder, itemId.ToString());
         }
 
-        public async Task SaveAsync(WorkshopItemDetails details, CancellationToken cancellationToken)
+        public async Task AddDetailsAsync(WorkshopItemDetails details, CancellationToken cancellationToken)
         {
             if (details == null)
                 throw new ArgumentNullException(nameof(details));

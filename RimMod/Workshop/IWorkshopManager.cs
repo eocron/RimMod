@@ -7,7 +7,7 @@ namespace RimMod.Workshop
     public interface IWorkshopManager
     {
         string GetFolder(long itemId);
-        Task SaveAsync(WorkshopItemDetails details, CancellationToken cancellationToken);
+        Task AddDetailsAsync(WorkshopItemDetails details, CancellationToken cancellationToken);
         Task DeleteAsync(long itemId, CancellationToken cancellationToken);
     }
 }

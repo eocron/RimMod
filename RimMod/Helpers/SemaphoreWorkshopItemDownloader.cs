@@ -1,8 +1,9 @@
 ﻿using System.Threading;
 using System.Threading.Tasks;
+using RimMod.OnlineDownloaders;
 using RimMod.Workshop.Entities;
 
-namespace RimMod.OnlineDownloaders
+namespace RimMod.Helpers
 {
     public sealed class SemaphoreWorkshopItemDownloader : IWorkshopItemDownloader
     {

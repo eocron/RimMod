@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace RimMod.Settings
 {
@@ -8,5 +9,7 @@ namespace RimMod.Settings
         public string ModLinks { get; set; }
         public UpdateMode Mode { get; set; }
         public List<long> WorkshopItemIds { get; set; }
+        public int MaxParallelDownloadCount { get; set; }
+        public TimeSpan RetryWaitInterval { get; set; }
     }
 }

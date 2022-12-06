@@ -20,12 +20,14 @@ namespace RimMod.Workshop
         {
             var folder = _targetManager.GetFolder(newItem.ItemId);
             await _downloader.DownloadIntoFolderAsync(folder, newItem, cancellationToken).ConfigureAwait(false);
+            await _targetManager.AddDetailsAsync(newItem, cancellationToken).ConfigureAwait(false);
         }
 
         public async Task CreateAsync(WorkshopItemDetails newItem, CancellationToken cancellationToken)
         {
             var folder = _targetManager.GetFolder(newItem.ItemId);
             await _downloader.DownloadIntoFolderAsync(folder, newItem, cancellationToken).ConfigureAwait(false);
+            await _targetManager.AddDetailsAsync(newItem, cancellationToken).ConfigureAwait(false);
         }
 
         public async Task DeleteAsync(long itemId, CancellationToken cancellationToken)

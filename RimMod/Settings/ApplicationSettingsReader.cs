@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -19,6 +20,8 @@ namespace RimMod.Settings
                 .Distinct()
                 .OrderBy(x => x)
                 .ToList();
+            result.MaxParallelDownloadCount = 1;
+            result.RetryWaitInterval = TimeSpan.FromSeconds(5);
             return result;
         }
         private static async Task<IEnumerable<long>> GetWorkshopItemIdsFromFile(string filePath, CancellationToken ct)

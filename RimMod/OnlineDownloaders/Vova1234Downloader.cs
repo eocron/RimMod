@@ -3,8 +3,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
 using System.Net.Http;
-using System.Net.Http.Headers;
-using System.Net.Http.Json;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
@@ -28,40 +26,57 @@ namespace RimMod.OnlineDownloaders
         public async Task DownloadIntoFolderAsync(string folder, WorkshopItemDetails details,
             CancellationToken cancellationToken)
         {
-            using var scope = _logger.BeginScope("Download {itemId}:{itemName} into {folder}", details.ItemId, details.EscapedTitle, folder);
-            using var client = _httpClientFactory.CreateClient(ApplicationConst.Vova1234Downloader);
-            _logger.Log(LogLevel.Information, "Preparing...");
-            var downloadLink = await CreateDownloadLink(client, details, cancellationToken).ConfigureAwait(false);
+            if (folder == null)
+                throw new ArgumentNullException(nameof(folder));
+            if (details == null)
+                throw new ArgumentNullException(nameof(details));
 
-            using var downloadResponse = await client.GetAsync(downloadLink, cancellationToken).ConfigureAwait(false);
-            var tmpFolder = folder + "_tmp";
-            if (Directory.Exists(tmpFolder))
-                Directory.Delete(tmpFolder, true);
-            Directory.CreateDirectory(tmpFolder);
+            using var scope = _logger.BeginScope("Download {itemId}:{itemName} into {folder}", details.ItemId,
+                details.EscapedTitle, folder);
             try
             {
-                var zipFilePath = Path.Combine(tmpFolder, "downloaded.zip");
-                var unzipFolderPath = Path.Combine(tmpFolder, "unzipped");
-                _logger.Log(LogLevel.Information, "Downloading...");
-                await using var fo = File.OpenWrite(zipFilePath);
-                await using var fi = await downloadResponse.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
-                await fi.CopyToAsync(fo, cancellationToken).ConfigureAwait(false);
-                fo.Close();
-                fi.Close();
 
-                _logger.Log(LogLevel.Information, "Extracting...");
-                ZipFile.ExtractToDirectory(zipFilePath, unzipFolderPath, false);
-                _logger.Log(LogLevel.Information, "Updating...");
-                if (Directory.Exists(folder))
-                    Directory.Delete(folder, true);
-                unzipFolderPath = Path.Combine(unzipFolderPath, details.ItemId.ToString());
-                Directory.Move(unzipFolderPath, folder);
-                _logger.LogDebug($"Done.");
-            }
-            finally
-            {
+                using var client = _httpClientFactory.CreateClient(ApplicationConst.Vova1234Downloader);
+                _logger.Log(LogLevel.Debug, "Preparing...");
+                var downloadLink = await CreateDownloadLink(client, details, cancellationToken).ConfigureAwait(false);
+
+                using var downloadResponse =
+                    await client.GetAsync(downloadLink, cancellationToken).ConfigureAwait(false);
+                var tmpFolder = folder + "_tmp";
                 if (Directory.Exists(tmpFolder))
                     Directory.Delete(tmpFolder, true);
+                Directory.CreateDirectory(tmpFolder);
+                try
+                {
+                    var zipFilePath = Path.Combine(tmpFolder, "downloaded.zip");
+                    var unzipFolderPath = Path.Combine(tmpFolder, "unzipped");
+                    _logger.Log(LogLevel.Debug, "Downloading...");
+                    await using var fo = File.OpenWrite(zipFilePath);
+                    await using var fi = await downloadResponse.Content.ReadAsStreamAsync(cancellationToken)
+                        .ConfigureAwait(false);
+                    await fi.CopyToAsync(fo, cancellationToken).ConfigureAwait(false);
+                    fo.Close();
+                    fi.Close();
+
+                    _logger.Log(LogLevel.Debug, "Extracting...");
+                    ZipFile.ExtractToDirectory(zipFilePath, unzipFolderPath, false);
+                    _logger.Log(LogLevel.Debug, "Updating...");
+                    if (Directory.Exists(folder))
+                        Directory.Delete(folder, true);
+                    unzipFolderPath = Path.Combine(unzipFolderPath, details.ItemId.ToString());
+                    Directory.Move(unzipFolderPath, folder);
+                    _logger.LogDebug($"Done.");
+                }
+                finally
+                {
+                    if (Directory.Exists(tmpFolder))
+                        Directory.Delete(tmpFolder, true);
+                }
+            }
+            catch (Exception e)
+            {
+                _logger.LogError(e.ToString());
+                throw;
             }
         }
 
