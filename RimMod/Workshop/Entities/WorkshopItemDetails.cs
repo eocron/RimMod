@@ -28,17 +28,5 @@ namespace RimMod.Workshop.Entities
             : string.Join("",
                 Title.Split(Path.GetInvalidPathChars().Concat(Path.GetInvalidFileNameChars()).ToArray(),
                     StringSplitOptions.RemoveEmptyEntries));
-
-
-        public override bool Equals(object obj)
-        {
-            var other = (WorkshopItemDetails)obj;
-            return ItemId.Equals(other.ItemId) && LastUpdatedTimestamp.Equals(other.LastUpdatedTimestamp);
-        }
-
-        public override int GetHashCode()
-        {
-            return ItemId.GetHashCode() ^ LastUpdatedTimestamp.GetHashCode();
-        }
     }
 }
