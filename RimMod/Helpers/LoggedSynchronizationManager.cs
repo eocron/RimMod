@@ -31,7 +31,6 @@ namespace RimMod.Helpers
             catch (Exception e)
             {
                 _logger.LogError(e.ToString());
-                throw;
             }
         }
 
@@ -45,7 +44,6 @@ namespace RimMod.Helpers
             catch (Exception e)
             {
                 _logger.LogError(e.ToString());
-                throw;
             }
         }
 
@@ -59,7 +57,6 @@ namespace RimMod.Helpers
             catch (Exception e)
             {
                 _logger.LogError(e.ToString());
-                throw;
             }
         }
     }

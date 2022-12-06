@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using RimMod.Settings;
@@ -35,13 +36,15 @@ namespace RimMod.Workshop
                 .Select(async obj =>
                 {
                     cancellationToken.ThrowIfCancellationRequested();
+
                     if (obj.o != null && obj.n != null) //update
                     {
                         if (_mode.HasFlag(UpdateMode.Update))
                         {
                             if (obj.o.LastUpdatedTimestamp != obj.n.LastUpdatedTimestamp)
                             {
-                                await _synchronizationManager.UpdateAsync(obj.o, obj.n, cancellationToken).ConfigureAwait(false);
+                                await _synchronizationManager.UpdateAsync(obj.o, obj.n, cancellationToken)
+                                    .ConfigureAwait(false);
                             }
                         }
                     }
@@ -49,17 +52,18 @@ namespace RimMod.Workshop
                     {
                         if (_mode.HasFlag(UpdateMode.Create))
                         {
-                            await _synchronizationManager.CreateAsync(obj.n, cancellationToken).ConfigureAwait(false);
+                            await _synchronizationManager.CreateAsync(obj.n, cancellationToken)
+                                .ConfigureAwait(false);
                         }
                     }
                     else if (obj.o != null && obj.n == null) //delete
                     {
                         if (_mode.HasFlag(UpdateMode.Delete))
                         {
-                            await _synchronizationManager.DeleteAsync(obj.k, cancellationToken).ConfigureAwait(false);
+                            await _synchronizationManager.DeleteAsync(obj.k, cancellationToken)
+                                .ConfigureAwait(false);
                         }
                     }
-
                 });
             await Task.WhenAll(tasks).ConfigureAwait(false);
         }

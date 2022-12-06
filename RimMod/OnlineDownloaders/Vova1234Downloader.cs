@@ -80,7 +80,8 @@ namespace RimMod.OnlineDownloaders
             }
         }
 
-        private async Task<string> CreateDownloadLink(HttpClient client, WorkshopItemDetails details, CancellationToken cancellationToken)
+        private async Task<string> CreateDownloadLink(HttpClient client, WorkshopItemDetails details,
+            CancellationToken cancellationToken)
         {
             var link = $"http://steamworkshop.download/online/steamonline.php";
             var content = new FormUrlEncodedContent(new KeyValuePair<string, string>[]
@@ -95,7 +96,8 @@ namespace RimMod.OnlineDownloaders
             if (html.Contains("Free space left"))
                 throw new Exception("Unknown error: Free space left for " + details.EscapedTitle);
 
-            var match = Regex.Match(html, "a href=[\"'](?<link>.+?)[\"']", RegexOptions.IgnoreCase | RegexOptions.Compiled | RegexOptions.ExplicitCapture);
+            var match = Regex.Match(html, "a href=[\"'](?<link>.+?)[\"']",
+                RegexOptions.IgnoreCase | RegexOptions.Compiled | RegexOptions.ExplicitCapture);
             if (match.Success)
                 return match.Groups["link"].Value;
 
