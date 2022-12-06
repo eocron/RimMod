@@ -33,50 +33,42 @@ namespace RimMod.OnlineDownloaders
 
             using var scope = _logger.BeginScope("Download {itemId}:{itemName} into {folder}", details.ItemId,
                 details.EscapedTitle, folder);
+
+            using var client = _httpClientFactory.CreateClient(ApplicationConst.Vova1234Downloader);
+            _logger.Log(LogLevel.Debug, "Preparing {itemName}...", details.EscapedTitle);
+            var downloadLink = await CreateDownloadLink(client, details, cancellationToken).ConfigureAwait(false);
+
+            using var downloadResponse =
+                await client.GetAsync(downloadLink, cancellationToken).ConfigureAwait(false);
+            var tmpFolder = folder + "_tmp";
+            if (Directory.Exists(tmpFolder))
+                Directory.Delete(tmpFolder, true);
+            Directory.CreateDirectory(tmpFolder);
             try
             {
+                var zipFilePath = Path.Combine(tmpFolder, "downloaded.zip");
+                var unzipFolderPath = Path.Combine(tmpFolder, "unzipped");
+                _logger.Log(LogLevel.Debug, "Downloading {itemName}...", details.EscapedTitle);
+                await using var fo = File.OpenWrite(zipFilePath);
+                await using var fi = await downloadResponse.Content.ReadAsStreamAsync(cancellationToken)
+                    .ConfigureAwait(false);
+                await fi.CopyToAsync(fo, cancellationToken).ConfigureAwait(false);
+                fo.Close();
+                fi.Close();
 
-                using var client = _httpClientFactory.CreateClient(ApplicationConst.Vova1234Downloader);
-                _logger.Log(LogLevel.Debug, "Preparing {itemName}...", details.EscapedTitle);
-                var downloadLink = await CreateDownloadLink(client, details, cancellationToken).ConfigureAwait(false);
-
-                using var downloadResponse =
-                    await client.GetAsync(downloadLink, cancellationToken).ConfigureAwait(false);
-                var tmpFolder = folder + "_tmp";
+                _logger.Log(LogLevel.Debug, "Extracting {itemName}...", details.EscapedTitle);
+                ZipFile.ExtractToDirectory(zipFilePath, unzipFolderPath, false);
+                _logger.Log(LogLevel.Debug, "Updating {itemName}...", details.EscapedTitle);
+                if (Directory.Exists(folder))
+                    Directory.Delete(folder, true);
+                unzipFolderPath = Path.Combine(unzipFolderPath, details.ItemId.ToString());
+                Directory.Move(unzipFolderPath, folder);
+                _logger.LogDebug("Done {itemName}.", details.EscapedTitle);
+            }
+            finally
+            {
                 if (Directory.Exists(tmpFolder))
                     Directory.Delete(tmpFolder, true);
-                Directory.CreateDirectory(tmpFolder);
-                try
-                {
-                    var zipFilePath = Path.Combine(tmpFolder, "downloaded.zip");
-                    var unzipFolderPath = Path.Combine(tmpFolder, "unzipped");
-                    _logger.Log(LogLevel.Debug, "Downloading {itemName}...", details.EscapedTitle);
-                    await using var fo = File.OpenWrite(zipFilePath);
-                    await using var fi = await downloadResponse.Content.ReadAsStreamAsync(cancellationToken)
-                        .ConfigureAwait(false);
-                    await fi.CopyToAsync(fo, cancellationToken).ConfigureAwait(false);
-                    fo.Close();
-                    fi.Close();
-
-                    _logger.Log(LogLevel.Debug, "Extracting {itemName}...", details.EscapedTitle);
-                    ZipFile.ExtractToDirectory(zipFilePath, unzipFolderPath, false);
-                    _logger.Log(LogLevel.Debug, "Updating {itemName}...", details.EscapedTitle);
-                    if (Directory.Exists(folder))
-                        Directory.Delete(folder, true);
-                    unzipFolderPath = Path.Combine(unzipFolderPath, details.ItemId.ToString());
-                    Directory.Move(unzipFolderPath, folder);
-                    _logger.LogDebug("Done {itemName}.", details.EscapedTitle);
-                }
-                finally
-                {
-                    if (Directory.Exists(tmpFolder))
-                        Directory.Delete(tmpFolder, true);
-                }
-            }
-            catch (Exception e)
-            {
-                _logger.LogError(e.ToString());
-                throw;
             }
         }
 
@@ -94,7 +86,7 @@ namespace RimMod.OnlineDownloaders
             response.EnsureSuccessStatusCode();
             var html = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
             if (html.Contains("Free space left"))
-                throw new Exception("Unknown error: Free space left for " + details.EscapedTitle);
+                throw new Exception("Free space left?");
 
             var match = Regex.Match(html, "a href=[\"'](?<link>.+?)[\"']",
                 RegexOptions.IgnoreCase | RegexOptions.Compiled | RegexOptions.ExplicitCapture);

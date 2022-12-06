@@ -1,20 +1,20 @@
 ﻿using System;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using RimMod.Workshop;
 using RimMod.Workshop.Entities;
 
-namespace RimMod.Helpers
+namespace RimMod.Workshop
 {
-    public sealed class LoggedSynchronizationManager : IWorkshopSynchronizationManager
+    public sealed class CircuitBreakerSynchronizationManager : IWorkshopSynchronizationManager
     {
         private readonly IWorkshopSynchronizationManager _inner;
-        private readonly ILogger<LoggedSynchronizationManager> _logger;
+        private readonly ILogger _logger;
 
-        public LoggedSynchronizationManager(
+        public CircuitBreakerSynchronizationManager(
             IWorkshopSynchronizationManager inner,
-            ILogger<LoggedSynchronizationManager> logger)
+            ILogger logger)
         {
             _inner = inner;
             _logger = logger;
@@ -26,11 +26,11 @@ namespace RimMod.Helpers
             try
             {
                 await _inner.UpdateAsync(oldItem, newItem, cancellationToken).ConfigureAwait(false);
-                _logger.LogInformation($"Updated item {oldItem.ItemId}");
+                _logger.LogInformation("Updated item '{itemId}:{itemName}:{tags}'", newItem.ItemId, newItem.EscapedTitle, GetTags(newItem));
             }
             catch (Exception e)
             {
-                _logger.LogError(e.ToString());
+                _logger.LogError("Failed to update '{itemId}:{itemName}:{tags}', {error}", newItem.ItemId, newItem.EscapedTitle, GetTags(newItem), e.Message);
             }
         }
 
@@ -39,11 +39,11 @@ namespace RimMod.Helpers
             try
             {
                 await _inner.CreateAsync(newItem, cancellationToken).ConfigureAwait(false);
-                _logger.LogInformation($"Added item {newItem.ItemId}");
+                _logger.LogInformation("Added item '{itemId}:{itemName}:{tags}'", newItem.ItemId, newItem.EscapedTitle, GetTags(newItem));
             }
             catch (Exception e)
             {
-                _logger.LogError(e.ToString());
+                _logger.LogError("Failed to add '{itemId}:{itemName}:{tags}', {error}", newItem.ItemId, newItem.EscapedTitle, GetTags(newItem), e.Message);
             }
         }
 
@@ -52,12 +52,17 @@ namespace RimMod.Helpers
             try
             {
                 await _inner.DeleteAsync(itemId, cancellationToken).ConfigureAwait(false);
-                _logger.LogInformation($"Removed item {itemId}");
+                _logger.LogInformation("Removed item '{itemId}'", itemId);
             }
             catch (Exception e)
             {
-                _logger.LogError(e.ToString());
+                _logger.LogError("Failed to remove '{itemId}', {error}", itemId, e.Message);
             }
+        }
+
+        private static string GetTags(WorkshopItemDetails details)
+        {
+            return string.Join(",", details.Tags.Select(x => x.Tag));
         }
     }
 }

@@ -4,6 +4,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using Newtonsoft.Json;
 using RimMod.Settings;
 using RimMod.Workshop.Entities;
 
@@ -33,7 +34,8 @@ namespace RimMod.Workshop
             using var response = await client.PostAsync(SteamGetPublishedFileDetailsUrl, form, cancellationToken).ConfigureAwait(false);
             response.EnsureSuccessStatusCode();
             var json = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
-            var obj = JObject.Parse(json).SelectToken("$.response.publishedfiledetails[0]").ToObject<WorkshopItemDetails>();
+            var apiResponse = JsonConvert.DeserializeObject<SteamApiResponse>(json);
+            var obj = apiResponse.Response.Details.Single();
             return obj;
         }
 

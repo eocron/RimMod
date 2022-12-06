@@ -38,9 +38,11 @@ namespace RimMod.IoC
                 new LocalWorkshopManager(
                     x.GetRequiredService<ApplicationSettings>().ModFolder));
             services.AddSingleton<IWorkshopSynchronizationManager>(x =>
-                new WorkshopSynchronizationManager(
-                    x.GetRequiredService<LocalWorkshopManager>(),
-                    x.GetRequiredService<IWorkshopItemDownloader>()));
+                new CircuitBreakerSynchronizationManager(
+                    new WorkshopSynchronizationManager(
+                        x.GetRequiredService<LocalWorkshopManager>(),
+                        x.GetRequiredService<IWorkshopItemDownloader>()),
+                    x.GetRequiredService<ILogger<WorkshopSynchronizationManager>>()));
 
             services.AddSingleton<IWorkshopSynchronizationRunner>(x =>
                 new WorkshopSynchronizationRunner(
