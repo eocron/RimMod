@@ -1,9 +1,9 @@
 ﻿using System.Threading;
 using System.Threading.Tasks;
 
-namespace RimMod
+namespace RimMod.Workshop
 {
-    public interface ISteamModDownloader
+    public interface IWorkshopSynchronizationRunner
     {
         Task RunAsync(CancellationToken cancellationToken);
     }

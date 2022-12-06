@@ -1,0 +1,39 @@
+﻿using System;
+using System.IO;
+using System.Linq;
+using System.Runtime.Serialization;
+
+namespace RimMod.Workshop.Entities
+{
+    [DataContract]
+    public class WorkshopItemDetails
+    {
+        [DataMember(Name = "publishedfileid")]
+        public long ItemId { get; set; }
+        [DataMember(Name = "title")]
+        public string Title { get; set; }
+        [DataMember(Name = "time_updated")]
+        public long LastUpdatedTimestamp { get; set; }
+        [DataMember(Name = "creator_app_id")]
+        public long AppId { get; set; }
+
+        [IgnoreDataMember]
+        public string EscapedTitle => Title == null
+            ? null
+            : string.Join("",
+                Title.Split(Path.GetInvalidPathChars().Concat(Path.GetInvalidFileNameChars()).ToArray(),
+                    StringSplitOptions.RemoveEmptyEntries));
+
+
+        public override bool Equals(object obj)
+        {
+            var other = (WorkshopItemDetails)obj;
+            return ItemId.Equals(other.ItemId) && LastUpdatedTimestamp.Equals(other.LastUpdatedTimestamp);
+        }
+
+        public override int GetHashCode()
+        {
+            return ItemId.GetHashCode() ^ LastUpdatedTimestamp.GetHashCode();
+        }
+    }
+}
