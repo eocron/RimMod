@@ -41,7 +41,7 @@ namespace RimMod
             }
             catch (Exception e)
             {
-                provider.GetRequiredService<ILogger<Program>>().LogError("Error occured: " + e);
+                provider.GetRequiredService<ILogger<Program>>().LogError(e.ToString());
                 throw;
             }
             finally

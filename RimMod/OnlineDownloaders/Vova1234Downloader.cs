@@ -37,7 +37,7 @@ namespace RimMod.OnlineDownloaders
             {
 
                 using var client = _httpClientFactory.CreateClient(ApplicationConst.Vova1234Downloader);
-                _logger.Log(LogLevel.Debug, "Preparing...");
+                _logger.Log(LogLevel.Debug, "Preparing {itemName}...", details.EscapedTitle);
                 var downloadLink = await CreateDownloadLink(client, details, cancellationToken).ConfigureAwait(false);
 
                 using var downloadResponse =
@@ -50,7 +50,7 @@ namespace RimMod.OnlineDownloaders
                 {
                     var zipFilePath = Path.Combine(tmpFolder, "downloaded.zip");
                     var unzipFolderPath = Path.Combine(tmpFolder, "unzipped");
-                    _logger.Log(LogLevel.Debug, "Downloading...");
+                    _logger.Log(LogLevel.Debug, "Downloading {itemName}...", details.EscapedTitle);
                     await using var fo = File.OpenWrite(zipFilePath);
                     await using var fi = await downloadResponse.Content.ReadAsStreamAsync(cancellationToken)
                         .ConfigureAwait(false);
@@ -58,14 +58,14 @@ namespace RimMod.OnlineDownloaders
                     fo.Close();
                     fi.Close();
 
-                    _logger.Log(LogLevel.Debug, "Extracting...");
+                    _logger.Log(LogLevel.Debug, "Extracting {itemName}...", details.EscapedTitle);
                     ZipFile.ExtractToDirectory(zipFilePath, unzipFolderPath, false);
-                    _logger.Log(LogLevel.Debug, "Updating...");
+                    _logger.Log(LogLevel.Debug, "Updating {itemName}...", details.EscapedTitle);
                     if (Directory.Exists(folder))
                         Directory.Delete(folder, true);
                     unzipFolderPath = Path.Combine(unzipFolderPath, details.ItemId.ToString());
                     Directory.Move(unzipFolderPath, folder);
-                    _logger.LogDebug($"Done.");
+                    _logger.LogDebug("Done {itemName}.", details.EscapedTitle);
                 }
                 finally
                 {

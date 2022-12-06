@@ -20,8 +20,6 @@ namespace RimMod.Settings
                 .Distinct()
                 .OrderBy(x => x)
                 .ToList();
-            result.MaxParallelDownloadCount = 1;
-            result.RetryWaitInterval = TimeSpan.FromSeconds(5);
             return result;
         }
         private static async Task<IEnumerable<long>> GetWorkshopItemIdsFromFile(string filePath, CancellationToken ct)
