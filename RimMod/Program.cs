@@ -4,9 +4,11 @@ using Microsoft.Extensions.Logging;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using DryIoc;
+using DryIoc.Microsoft.DependencyInjection;
 using Microsoft.Extensions.Logging.Console;
-using RimMod.Workshop;
 using RimMod.IoC;
+using RimMod.Synchronization;
 
 namespace RimMod
 {
@@ -32,21 +34,27 @@ namespace RimMod
                     o.ColorBehavior = LoggerColorBehavior.Enabled;
                 });
             });
+            
             collection.AddSingleton(config);
             ApplicationConfigurator.Configure(collection);
-            await using var provider = collection.BuildServiceProvider();
-            try
+            using var container = new Container(rules=> rules.WithMicrosoftDependencyInjectionRules()).WithDependencyInjectionAdapter(collection);
+            ApplicationConfigurator.Configure(container);
+
+            using var mainScope = container.CreateScope();
             {
-                await provider.GetRequiredService<IWorkshopSynchronizationRunner>().RunAsync(cts.Token);
-            }
-            catch (Exception e)
-            {
-                provider.GetRequiredService<ILogger<Program>>().LogError(e.ToString());
-                throw;
-            }
-            finally
-            {
-                cts.Cancel();
+                try
+                {
+                    await container.GetRequiredService<IItemSynchronizationRunner>().RunAsync(cts.Token);
+                }
+                catch (Exception e)
+                {
+                    container.GetRequiredService<ILogger<Program>>().LogError(e.ToString());
+                    throw;
+                }
+                finally
+                {
+                    cts.Cancel();
+                }
             }
         }
     }

@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace RimMod
+namespace RimMod.Helpers
 {
     public static class EnumerableExtensions
     {
