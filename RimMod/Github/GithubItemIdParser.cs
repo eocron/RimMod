@@ -9,7 +9,7 @@ namespace RimMod.Github
     public sealed class GithubItemIdParser : IIdParser<GithubItemId>
     {
         private static readonly Regex SteamWorkshopItemIdPattern = new Regex(
-            @"github\.com\/(?<user_name>.+?)\/(?<repo_name>.+?)(\/(?<assetPath>.+))?",
+            @"github\.com[\/\\](?<user_name>[^\/\\]+)[\/\\](?<repo_name>[^\/\\]+)([\/\\](?<assetPath>.+))?",
             RegexOptions.Compiled | RegexOptions.CultureInvariant | RegexOptions.IgnoreCase | RegexOptions.Multiline);
 
         public IEnumerable<GithubItemId> Parse(string text)

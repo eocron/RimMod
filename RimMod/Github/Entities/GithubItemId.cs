@@ -20,7 +20,7 @@ namespace RimMod.Github.Entities
         {
             Username = username;
             RepositoryName = repositoryName;
-            AssetPath = assetPath;
+            AssetPath = string.IsNullOrWhiteSpace(assetPath) ? null : assetPath.Trim();
         }
 
         public bool Equals(GithubItemId other)
