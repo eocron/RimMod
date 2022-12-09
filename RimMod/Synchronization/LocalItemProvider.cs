@@ -22,7 +22,7 @@ namespace RimMod.Synchronization
 
         public async Task<IItem> GetItemAsync(IItemId itemId, CancellationToken cancellationToken)
         {
-            var path = LocalItemHelper.GetLocalDetailsPath(_folder, itemId);
+            var path = LocalItemHelper.GetLocalDetailsPath(_folder, itemId.GetFolderName());
             if (!File.Exists(path))
                 return null;
             var text = await File.ReadAllTextAsync(path, cancellationToken).ConfigureAwait(false);

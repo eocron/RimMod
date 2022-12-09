@@ -14,9 +14,9 @@ namespace RimMod.Synchronization
         [DataMember]
         public string Version { get; private set; }
 
-        public virtual string GetFolderName()
+        public string GetFolderName()
         {
-            return Id?.ToString();
+            return Id?.GetFolderName();
         }
 
         protected Item(){}

@@ -48,7 +48,12 @@ namespace RimMod.Github.Entities
 
         public override string ToString()
         {
-            return ReleaseId != null ? $"github_{ReleaseId}" : $"{Username}_{RepositoryName}_{ReleasePath}";
+            return ReleaseId != null ? ReleaseId.ToString() : $"{Username}_{RepositoryName}_{ReleasePath}";
+        }
+
+        public string GetFolderName()
+        {
+            throw new NotImplementedException();
         }
     }
 }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using RimMod.Helpers;
@@ -25,14 +26,14 @@ namespace RimMod.Synchronization
             if (item == null)
                 throw new ArgumentNullException(nameof(item));
 
-            var path = LocalItemHelper.GetLocalDetailsPath(_folder, item.Id);
+            var path = LocalItemHelper.GetLocalDetailsPath(_folder, item.GetFolderName());
             await File.WriteAllTextAsync(path, LocalItemHelper.Serialize(item), cancellationToken)
                 .ConfigureAwait(false);
         }
 
         public Task DeleteAsync(IItemId itemId, CancellationToken cancellationToken)
         {
-            var path = LocalItemHelper.GetLocalDetailsPath(_folder, itemId);
+            var path = LocalItemHelper.GetLocalDetailsPath(_folder, itemId.GetFolderName());
             if (Directory.Exists(path))
                 Directory.Delete(path, true);
             return Task.CompletedTask;

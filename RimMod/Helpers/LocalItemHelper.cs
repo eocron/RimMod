@@ -30,14 +30,13 @@ namespace RimMod.Helpers
             return Path.Combine(folder, "update_info.json");
         }
 
-        public static string GetLocalDetailsPath(string folder, IItemId itemId)
+        public static string GetLocalDetailsPath(string folder, string name)
         {
             if (folder == null)
                 throw new ArgumentNullException(nameof(folder));
-            var str = itemId?.ToString();
-            if (string.IsNullOrWhiteSpace(str))
-                throw new ArgumentNullException(nameof(itemId));
-            return Path.Combine(folder, str, "update_info.json");
+            if (string.IsNullOrWhiteSpace(name))
+                throw new ArgumentNullException(nameof(name));
+            return Path.Combine(folder, name, "update_info.json");
         }
 
         public static string GetLocalDetailsFolder(string folder, IItemId itemId)

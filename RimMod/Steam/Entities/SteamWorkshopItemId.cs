@@ -39,6 +39,11 @@ namespace RimMod.Steam.Entities
 
         public override string ToString()
         {
+            return FileId.ToString();
+        }
+
+        public string GetFolderName()
+        {
             return $"steam_{FileId}";
         }
     }
