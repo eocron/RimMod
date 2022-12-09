@@ -23,7 +23,11 @@ namespace RimMod.IoC
         public static void Configure(IServiceCollection services)
         {
             services.AddHttpClient(ApplicationConst.SteamHttpClientName, x => { x.BaseAddress = new Uri("https://api.steampowered.com/"); });
-            services.AddHttpClient(ApplicationConst.GithubHttpClientName);
+            services.AddHttpClient(ApplicationConst.GithubHttpClientName, x =>
+            {
+                x.BaseAddress = new Uri("https://api.github.com/");
+                x.DefaultRequestHeaders.Add("User-Agent", "request");
+            });
             services.AddHttpClient(ApplicationConst.Vova1234DownloaderHttpClientName);
         }
 

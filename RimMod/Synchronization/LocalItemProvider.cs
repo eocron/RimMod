@@ -29,7 +29,7 @@ namespace RimMod.Synchronization
             return LocalItemHelper.Deserialize<IItem>(text);
         }
 
-        public async Task<IList<IItem>> GetItemsAsync(ICollection<IItemId> itemIds, CancellationToken cancellationToken)
+        public async Task<IList<IItem>> GetItemsAsync(IList<IItemId> itemIds, CancellationToken cancellationToken)
         {
             return await Task.WhenAll(itemIds.Select(x => GetItemAsync(x, cancellationToken))).ConfigureAwait(false);
         }

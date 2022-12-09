@@ -14,10 +14,13 @@ public sealed class ComplexItemProvider : IItemProvider<IItemId, IItem>
     {
         _all = all.ToDictionary(x=> x.ItemIdType);
     }
-    public async Task<IList<IItem>> GetItemsAsync(ICollection<IItemId> itemIds, CancellationToken cancellationToken)
+    public async Task<IList<IItem>> GetItemsAsync(IList<IItemId> itemIds, CancellationToken cancellationToken)
     {
-        var result = await Task.WhenAll(itemIds.DistinctBy(x=> x).GroupBy(x => x.GetType())
-                .Select(x => _all[x.Key].GetItemsAsync(x.ToList(), cancellationToken)))
+        var result = await Task.WhenAll(
+                itemIds
+                    .DistinctBy(x => x)
+                    .GroupBy(x => x.GetType())
+                    .Select(x => _all[x.Key].GetItemsAsync(x.ToList(), cancellationToken)))
             .ConfigureAwait(false);
         return result.SelectMany(x => x).DistinctBy(x => x.Id).ToList();
     }

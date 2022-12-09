@@ -6,7 +6,7 @@ namespace RimMod.Synchronization
 {
     public interface IItemProvider<TId, TItem>
     {
-        Task<IList<TItem>> GetItemsAsync(ICollection<TId> itemIds, CancellationToken cancellationToken);
+        Task<IList<TItem>> GetItemsAsync(IList<TId> itemIds, CancellationToken cancellationToken);
 
         Task<IList<TItem>> GetAllItemsAsync(CancellationToken cancellationToken);
     }

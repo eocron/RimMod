@@ -13,21 +13,24 @@ namespace RimMod.Github.Entities
         [DataMember]
         public string RepositoryName { get; private set; }
         [DataMember]
-        public string AssetPath { get; private set; }
+        public string ReleasePath { get; private set; }
+        [DataMember]
+        public long? ReleaseId { get; private set; }
 
         private GithubItemId(){}
-        public GithubItemId(string username, string repositoryName, string assetPath)
+        public GithubItemId(string username, string repositoryName, string releasePath, long? releaseId)
         {
             Username = username;
             RepositoryName = repositoryName;
-            AssetPath = string.IsNullOrWhiteSpace(assetPath) ? null : assetPath.Trim();
+            ReleasePath = string.IsNullOrWhiteSpace(releasePath) ? null : releasePath.Trim();
+            ReleaseId = releaseId;
         }
 
         public bool Equals(GithubItemId other)
         {
             if (ReferenceEquals(null, other)) return false;
             if (ReferenceEquals(this, other)) return true;
-            return Username == other.Username && RepositoryName == other.RepositoryName && AssetPath == other.AssetPath;
+            return Username == other.Username && RepositoryName == other.RepositoryName && ReleasePath == other.ReleasePath && ReleaseId == other.ReleaseId;
         }
 
         public override bool Equals(object obj)
@@ -40,12 +43,12 @@ namespace RimMod.Github.Entities
 
         public override int GetHashCode()
         {
-            return HashCode.Combine(Username, RepositoryName, AssetPath);
+            return HashCode.Combine(Username, RepositoryName, ReleasePath, ReleaseId);
         }
 
         public override string ToString()
         {
-            return string.Format("{0}/{1}/{2}", Username, RepositoryName, AssetPath);
+            return ReleaseId != null ? $"github_{ReleaseId}" : $"{Username}_{RepositoryName}_{ReleasePath}";
         }
     }
 }

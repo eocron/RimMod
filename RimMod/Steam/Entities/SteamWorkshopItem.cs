@@ -9,6 +9,8 @@ namespace RimMod.Steam.Entities
     {
         [DataMember]
         public WorkshopItemDetails Details { get; set; }
+
+        private SteamWorkshopItem(){}
         public SteamWorkshopItem(SteamWorkshopItemId id, string name, string version, WorkshopItemDetails details) : base(id, name, version)
         {
             Details = details;

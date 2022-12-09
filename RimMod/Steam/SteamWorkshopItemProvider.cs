@@ -40,7 +40,8 @@ namespace RimMod.Steam
             return new SteamWorkshopItem(itemId, obj.EscapedTitle, obj.LastUpdatedTimestamp.ToString(), obj);
         }
 
-        public async Task<IList<SteamWorkshopItem>> GetItemsAsync(ICollection<SteamWorkshopItemId> itemIds, CancellationToken cancellationToken)
+        public async Task<IList<SteamWorkshopItem>> GetItemsAsync(IList<SteamWorkshopItemId> itemIds,
+            CancellationToken cancellationToken)
         {
             return await Task.WhenAll(itemIds.Select(x => GetItemAsync(x, cancellationToken))).ConfigureAwait(false);
         }

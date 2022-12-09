@@ -13,7 +13,7 @@ namespace RimMod.Synchronization
         [DataMember]
         public string Version { get; private set; }
 
-        private Item(){}
+        protected Item(){}
 
         protected Item(TId id, string name, string version)
         {

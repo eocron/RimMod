@@ -15,7 +15,7 @@ namespace RimMod.Synchronization
             _inner = inner ?? throw new ArgumentNullException(nameof(inner));
         }
 
-        public async Task<IList<IItem>> GetItemsAsync(ICollection<IItemId> itemIds, CancellationToken cancellationToken)
+        public async Task<IList<IItem>> GetItemsAsync(IList<IItemId> itemIds, CancellationToken cancellationToken)
         {
             var result = await _inner.GetItemsAsync(itemIds.Select(x => (TId)x).ToList(), cancellationToken)
                 .ConfigureAwait(false);

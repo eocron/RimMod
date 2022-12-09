@@ -39,7 +39,7 @@ namespace RimMod.Steam.Entities
 
         public override string ToString()
         {
-            return FileId.ToString();
+            return $"steam_{FileId}";
         }
     }
 }
