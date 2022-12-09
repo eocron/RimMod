@@ -7,4 +7,5 @@ public interface IItem
     string Name { get; }
 
     string Version { get; }
+    string GetFolderName();
 }

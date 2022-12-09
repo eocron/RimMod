@@ -42,12 +42,16 @@ namespace RimMod.Helpers
 
         public static string GetLocalDetailsFolder(string folder, IItemId itemId)
         {
+            return GetLocalDetailsFolder(folder, itemId?.ToString());
+        }
+
+        public static string GetLocalDetailsFolder(string folder, string name)
+        {
             if (folder == null)
                 throw new ArgumentNullException(nameof(folder));
-            var str = itemId?.ToString();
-            if (string.IsNullOrWhiteSpace(str))
-                throw new ArgumentNullException(nameof(itemId));
-            return Path.Combine(folder, str);
+            if (string.IsNullOrWhiteSpace(name))
+                throw new ArgumentNullException(nameof(name));
+            return Path.Combine(folder, name);
         }
     }
 }

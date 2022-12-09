@@ -17,7 +17,7 @@ namespace RimMod.Steam
         private readonly string _httpClientName;
         private readonly ILogger _logger;
 
-        public Vova1234SteamWorkshopDownloader(IHttpClientFactory httpClientFactory, string httpClientName, ILogger logger) : base(httpClientFactory, httpClientName, logger, true)
+        public Vova1234SteamWorkshopDownloader(IHttpClientFactory httpClientFactory, string httpClientName, ILogger logger) : base(httpClientFactory, httpClientName, logger, 1)
         {
             _httpClientFactory = httpClientFactory;
             _httpClientName = httpClientName;

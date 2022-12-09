@@ -18,10 +18,10 @@ where TItem : IItem
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly string _httpClientName;
     private readonly ILogger _logger;
-    private readonly bool _unwrap;
+    private readonly int _unwrap;
     public IReadOnlySet<Type> SupportedItemTypes { get; }
 
-    protected BaseHttpDownloader(IHttpClientFactory httpClientFactory, string httpClientName, ILogger logger, bool unwrap)
+    protected BaseHttpDownloader(IHttpClientFactory httpClientFactory, string httpClientName, ILogger logger, int unwrap)
     {
         _httpClientFactory = httpClientFactory;
         _httpClientName = httpClientName;
@@ -71,9 +71,12 @@ where TItem : IItem
 
             _logger.Log(LogLevel.Debug, "Extracting {itemName}...", item.Name);
             ZipFile.ExtractToDirectory(zipFilePath, unzipFolderPath, false);
-            if (_unwrap)
+            if (_unwrap > 0)
             {
-                unzipFolderPath = Directory.GetDirectories(unzipFolderPath).Single();
+                for (int i = 0; i < _unwrap; i++)
+                {
+                    unzipFolderPath = Directory.GetDirectories(unzipFolderPath).Single();
+                }
                 _logger.Log(LogLevel.Debug, "Unwrapped path to {unwrappedPath}", unzipFolderPath);
             }
 

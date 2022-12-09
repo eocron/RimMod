@@ -17,14 +17,14 @@ namespace RimMod.Synchronization
 
         public async Task UpdateAsync(IItem oldItem, IItem newItem, CancellationToken cancellationToken)
         {
-            var folder = _targetManager.GetFolder(newItem.Id);
+            var folder = _targetManager.GetFolder(newItem.GetFolderName());
             await _downloader.DownloadIntoFolderAsync(folder, newItem, cancellationToken).ConfigureAwait(false);
             await _targetManager.AddItemAsync(newItem, cancellationToken).ConfigureAwait(false);
         }
 
         public async Task CreateAsync(IItem newItem, CancellationToken cancellationToken)
         {
-            var folder = _targetManager.GetFolder(newItem.Id);
+            var folder = _targetManager.GetFolder(newItem.GetFolderName());
             await _downloader.DownloadIntoFolderAsync(folder, newItem, cancellationToken).ConfigureAwait(false);
             await _targetManager.AddItemAsync(newItem, cancellationToken).ConfigureAwait(false);
         }

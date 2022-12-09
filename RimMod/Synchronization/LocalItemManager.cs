@@ -14,9 +14,9 @@ namespace RimMod.Synchronization
             _folder = folder;
         }
 
-        public string GetFolder(IItemId itemId)
+        public string GetFolder(string name)
         {
-            var path = LocalItemHelper.GetLocalDetailsFolder(_folder, itemId);
+            var path = LocalItemHelper.GetLocalDetailsFolder(_folder, name);
             return path;
         }
 

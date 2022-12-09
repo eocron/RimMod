@@ -5,7 +5,7 @@ namespace RimMod.Synchronization
 {
     public interface IItemManager
     {
-        string GetFolder(IItemId itemId);
+        string GetFolder(string itemId);
         Task AddItemAsync(IItem item, CancellationToken cancellationToken);
         Task DeleteAsync(IItemId itemId, CancellationToken cancellationToken);
     }

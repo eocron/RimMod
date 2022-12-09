@@ -1,4 +1,5 @@
 ﻿using System.Runtime.Serialization;
+using DryIoc.ImTools;
 
 namespace RimMod.Synchronization
 {
@@ -12,6 +13,11 @@ namespace RimMod.Synchronization
         public string Name { get; private set; }
         [DataMember]
         public string Version { get; private set; }
+
+        public virtual string GetFolderName()
+        {
+            return Id?.ToString();
+        }
 
         protected Item(){}
 

@@ -9,7 +9,7 @@ namespace RimMod.Github
 {
     public sealed class GithubDownloader : BaseHttpDownloader<GithubItemId, GithubItem>
     {
-        public GithubDownloader(IHttpClientFactory httpClientFactory, string httpClientName, ILogger logger) : base(httpClientFactory, httpClientName, logger, true)
+        public GithubDownloader(IHttpClientFactory httpClientFactory, string httpClientName, ILogger logger) : base(httpClientFactory, httpClientName, logger, 1)
         {
         }
 
