@@ -11,73 +11,29 @@ using RimMod.Steam.Entities;
 
 namespace RimMod.Steam
 {
-    public sealed class Vova1234SteamWorkshopDownloader : BaseDownloader<SteamWorkshopItemId, SteamWorkshopItem>
+    public sealed class Vova1234SteamWorkshopDownloader : BaseHttpDownloader<SteamWorkshopItemId, SteamWorkshopItem>
     {
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly string _httpClientName;
-        private readonly ILogger<Vova1234SteamWorkshopDownloader> _logger;
+        private readonly ILogger _logger;
 
-        public Vova1234SteamWorkshopDownloader(IHttpClientFactory httpClientFactory, string httpClientName, ILogger<Vova1234SteamWorkshopDownloader> logger)
+        public Vova1234SteamWorkshopDownloader(IHttpClientFactory httpClientFactory, string httpClientName, ILogger logger) : base(httpClientFactory, httpClientName, logger, true)
         {
             _httpClientFactory = httpClientFactory;
             _httpClientName = httpClientName;
             _logger = logger;
         }
 
-        protected override async Task OnDownloadIntoFolderAsync(string folder, SteamWorkshopItem item, CancellationToken cancellationToken)
+        protected override async Task<string> GetDownloadLink(SteamWorkshopItem item, CancellationToken cancellationToken)
         {
             var details = item.Details;
-
-            using var scope = _logger.BeginScope("Download {itemId}:{itemName} into {folder}", details.ItemId,
-                details.EscapedTitle, folder);
-
-            using var client = _httpClientFactory.CreateClient(_httpClientName);
-            _logger.Log(LogLevel.Debug, "Preparing {itemName}...", details.EscapedTitle);
-            var downloadLink = await CreateDownloadLink(client, details, cancellationToken).ConfigureAwait(false);
-
-            using var downloadResponse =
-                await client.GetAsync(downloadLink, cancellationToken).ConfigureAwait(false);
-            var tmpFolder = folder + "_tmp";
-            if (Directory.Exists(tmpFolder))
-                Directory.Delete(tmpFolder, true);
-            Directory.CreateDirectory(tmpFolder);
-            try
-            {
-                var zipFilePath = Path.Combine(tmpFolder, "downloaded.zip");
-                var unzipFolderPath = Path.Combine(tmpFolder, "unzipped");
-                _logger.Log(LogLevel.Debug, "Downloading {itemName}...", details.EscapedTitle);
-                await using var fo = File.OpenWrite(zipFilePath);
-                await using var fi = await downloadResponse.Content.ReadAsStreamAsync(cancellationToken)
-                    .ConfigureAwait(false);
-                await fi.CopyToAsync(fo, cancellationToken).ConfigureAwait(false);
-                fo.Close();
-                fi.Close();
-
-                _logger.Log(LogLevel.Debug, "Extracting {itemName}...", details.EscapedTitle);
-                ZipFile.ExtractToDirectory(zipFilePath, unzipFolderPath, false);
-                _logger.Log(LogLevel.Debug, "Updating {itemName}...", details.EscapedTitle);
-                if (Directory.Exists(folder))
-                    Directory.Delete(folder, true);
-                unzipFolderPath = Path.Combine(unzipFolderPath, details.ItemId.ToString());
-                Directory.Move(unzipFolderPath, folder);
-                _logger.LogDebug("Done {itemName}.", details.EscapedTitle);
-            }
-            finally
-            {
-                if (Directory.Exists(tmpFolder))
-                    Directory.Delete(tmpFolder, true);
-            }
-        }
-
-        private async Task<string> CreateDownloadLink(HttpClient client, WorkshopItemDetails details,
-            CancellationToken cancellationToken)
-        {
             var link = $"http://steamworkshop.download/online/steamonline.php";
             var content = new FormUrlEncodedContent(new KeyValuePair<string, string>[]
             {
                 new("item", details.ItemId.ToString()),
                 new("app", details.AppId.ToString())
             });
+            using var client = _httpClientFactory.CreateClient(_httpClientName);
             using var response = await client.PostAsync(link, content, cancellationToken).ConfigureAwait(false);
 
             response.EnsureSuccessStatusCode();

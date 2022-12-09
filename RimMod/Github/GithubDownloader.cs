@@ -1,26 +1,21 @@
-﻿using System;
-using System.Net.Http;
+﻿using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using RimMod.Github.Entities;
 using RimMod.Steam;
 
 namespace RimMod.Github
 {
-    public sealed class GithubDownloader : BaseDownloader<GithubItemId, GithubItem>
+    public sealed class GithubDownloader : BaseHttpDownloader<GithubItemId, GithubItem>
     {
-        private readonly IHttpClientFactory _httpClientFactory;
-        private readonly string _httpClientName;
-
-        public GithubDownloader(IHttpClientFactory httpClientFactory, string httpClientName)
+        public GithubDownloader(IHttpClientFactory httpClientFactory, string httpClientName, ILogger logger) : base(httpClientFactory, httpClientName, logger, true)
         {
-            _httpClientFactory = httpClientFactory;
-            _httpClientName = httpClientName;
         }
 
-        protected override Task OnDownloadIntoFolderAsync(string folder, GithubItem item, CancellationToken cancellationToken)
+        protected override Task<string> GetDownloadLink(GithubItem item, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            return Task.FromResult(item.DownloadLink);
         }
     }
 }

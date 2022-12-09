@@ -88,7 +88,8 @@ namespace RimMod.IoC
                 .RegisterItemDownloader(x=> 
                     new GithubDownloader(
                         x.GetRequiredService<IHttpClientFactory>(),
-                        ApplicationConst.GithubHttpClientName))
+                        ApplicationConst.GithubHttpClientName,
+                        x.GetRequiredService<ILogger<GithubDownloader>>()))
                 .RegisterItemDownloader(x =>
                     new Vova1234SteamWorkshopDownloader(
                         x.GetRequiredService<IHttpClientFactory>(),
