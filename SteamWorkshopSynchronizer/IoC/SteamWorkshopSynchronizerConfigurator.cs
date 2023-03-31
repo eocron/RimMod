@@ -3,6 +3,7 @@ using System.Net.Http;
 using DryIoc;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using SteamWorkshopSynchronizer.Commands;
 using SteamWorkshopSynchronizer.Folder;
 using SteamWorkshopSynchronizer.Settings;
 using SteamWorkshopSynchronizer.Steam;

@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using DryIoc;
 using DryIoc.Microsoft.DependencyInjection;
 using Microsoft.Extensions.Logging.Console;
+using SteamWorkshopSynchronizer.Commands;
 using SteamWorkshopSynchronizer.IoC;
 using SteamWorkshopSynchronizer.Settings;
 

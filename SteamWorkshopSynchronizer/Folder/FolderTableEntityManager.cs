@@ -68,6 +68,10 @@ namespace SteamWorkshopSynchronizer.Folder
         
         private async Task<IDictionary<string, Entry>> InternalGetAllAsync(CancellationToken ct)
         {
+            if (!Directory.Exists(_folder))
+            {
+                return new Dictionary<string, Entry>();
+            }
             var all = await Task
                 .WhenAll(Directory.GetDirectories(_folder, "*", SearchOption.TopDirectoryOnly)
                     .Select(x => TryConvertAsync(x, ct)).ToList()).ConfigureAwait(false);

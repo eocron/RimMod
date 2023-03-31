@@ -7,7 +7,7 @@ namespace SteamWorkshopSynchronizer.UnitTests;
 
 public class SteamWorkshopTableEntityProviderTests
 {
-    private SteamWorkshopTableEntityProvider _provider;
+    private ITableEntityProvider<SteamWorkshopTableEntity> _provider;
     private CancellationToken _ct;
     private long[] _allFileIds;
 

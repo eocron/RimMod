@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using SteamWorkshopSynchronizer.Settings;
 
-namespace SteamWorkshopSynchronizer
+namespace SteamWorkshopSynchronizer.Commands
 {
     public sealed class TableEntitySynchronizationAsyncCommand<TEntityInfo> : IAsyncCommand
         where TEntityInfo : class, ITableEntity
@@ -40,8 +40,8 @@ namespace SteamWorkshopSynchronizer
                 .ToLookup(x => GetMode(x.source, x.target));
 
             var toDelete = (_mode & SynchronizationMode.Delete) != 0
-                ? fjoin[SynchronizationMode.Delete].Select(x => x.target.Key).ToArray()
-                : Array.Empty<string>();
+                ? fjoin[SynchronizationMode.Delete].Select(x => x.target).ToArray()
+                : Array.Empty<TEntityInfo>();
             var toCreate = (_mode & SynchronizationMode.Create) != 0
                 ? fjoin[SynchronizationMode.Create].Select(x => x.source).ToArray()
                 : Array.Empty<TEntityInfo>();
@@ -55,16 +55,19 @@ namespace SteamWorkshopSynchronizer
             foreach (var tableEntity in toCreate)
             {
                 await _targetManager.CreateEntityAsync(tableEntity, ct).ConfigureAwait(false);
+                _logger.LogInformation("Created {escapedTitle}", tableEntity.EscapedTitle);
             }
 
             foreach (var tableEntity in toUpdate)
             {
                 await _targetManager.UpdateEntityAsync(tableEntity, ct).ConfigureAwait(false);
+                _logger.LogInformation("Updated {escapedTitle}", tableEntity.EscapedTitle);
             }
 
-            foreach (var key in toDelete)
+            foreach (var tableEntity in toDelete)
             {
-                await _targetManager.DeleteEntityAsync(key, ct);
+                await _targetManager.DeleteEntityAsync(tableEntity.Key, ct);
+                _logger.LogInformation("Deleted {escapedTitle}", tableEntity.EscapedTitle);
             }
         }
 
