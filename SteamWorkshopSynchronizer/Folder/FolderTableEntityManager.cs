@@ -10,7 +10,7 @@ using Newtonsoft.Json;
 namespace SteamWorkshopSynchronizer.Folder
 {
     public class FolderTableEntityManager<T> : ITableEntityProvider<T>, ITableEntityManager<T>
-        where T : class, ITableEntity
+        where T : class, IFileTableEntity
     {
         private readonly string _folder;
         private readonly ILogger _logger;

@@ -40,7 +40,7 @@ namespace SteamWorkshopSynchronizer.UnitTests
         {
             var sourceSet = _fixture.CreateMany<SteamWorkshopTableEntity>(4).ToList();
             var targetSet = _fixture.CreateMany<SteamWorkshopTableEntity>(2).Concat(sourceSet.Take(2).Select(DeepClone)).ToList();
-            targetSet.Last().Modified = targetSet.Last().Modified.Subtract(TimeSpan.FromHours(1));
+            targetSet.Last().ETag += "changed";
             SetEntities(sourceSet, targetSet);
             
             await _sync.RunAsync(_ct);

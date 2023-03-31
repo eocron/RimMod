@@ -47,7 +47,7 @@ namespace SteamWorkshopSynchronizer.UnitTests
             }
             await AssertEntities(entities);
             
-            entities[0].Modified = DateTime.UtcNow;
+            entities[0].ETag = DateTime.UtcNow.ToString();
             entities[0].EscapedTitle = "new_title";
             entities[0].FileId = 10000;
             await _manager.UpdateEntityAsync(entities[0], _ct);

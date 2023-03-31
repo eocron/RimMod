@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
+using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
@@ -53,12 +54,15 @@ namespace SteamWorkshopSynchronizer.Steam
 
         private static SteamWorkshopTableEntity Convert(WorkshopItemDetails details)
         {
+            var lastUpdated = DateTimeOffset.FromUnixTimeSeconds(details.LastUpdatedTimestamp).ToUniversalTime()
+                .DateTime;
             return new SteamWorkshopTableEntity
             {
                 Key = details.ItemId.ToString(),
                 FileId = details.ItemId,
                 AppId = details.AppId,
-                Modified = DateTimeOffset.FromUnixTimeSeconds(details.LastUpdatedTimestamp).ToUniversalTime().DateTime,
+                LastUpdated = lastUpdated,
+                ETag = lastUpdated.Ticks.ToString(),
                 EscapedTitle = details.EscapedTitle
             };
         }

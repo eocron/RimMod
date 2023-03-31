@@ -6,8 +6,6 @@ namespace SteamWorkshopSynchronizer
     {
         string Key { get; set; }
         
-        string EscapedTitle { get; set; }
-        
-        DateTime Modified { get; set; }
+        string ETag { get; set; }
     }
 }

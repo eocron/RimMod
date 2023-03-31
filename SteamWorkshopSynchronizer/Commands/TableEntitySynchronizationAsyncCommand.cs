@@ -8,7 +8,7 @@ using SteamWorkshopSynchronizer.Settings;
 namespace SteamWorkshopSynchronizer.Commands
 {
     public sealed class TableEntitySynchronizationAsyncCommand<TEntityInfo> : IAsyncCommand
-        where TEntityInfo : class, ITableEntity
+        where TEntityInfo : class, IFileTableEntity
     {
         private readonly ITableEntityProvider<TEntityInfo> _sourceProvider;
         private readonly ITableEntityProvider<TEntityInfo> _targetProvider;
@@ -80,7 +80,7 @@ namespace SteamWorkshopSynchronizer.Commands
 
             if (source != null && target != null)
             {
-                if (source.Modified != target.Modified)
+                if (source.ETag != target.ETag)
                 {
                     return SynchronizationMode.Update;
                 }
