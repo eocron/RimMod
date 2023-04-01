@@ -68,14 +68,12 @@ namespace SteamWorkshopSynchronizer.Folder
         {
             var found = (await InternalGetOrDefaultAsync(entity.Key, ct).ConfigureAwait(false))?.DirectoryPath ?? Path.Combine(_folder, entity.EscapedTitle);
             var manifestPath = GetManifestPath(found);
-            if(!Directory.Exists(found))
-                Directory.CreateDirectory(found);
-
             if (_updater != null)
             {
                 await _updater.UpdateAsync(entity, found, ct).ConfigureAwait(false);
             }
-
+            if(!Directory.Exists(found))
+                Directory.CreateDirectory(found);
             await File.WriteAllTextAsync(manifestPath, JsonConvert.SerializeObject(entity, JsonSerializerSettings), ct).ConfigureAwait(false);
         }
         

@@ -42,7 +42,9 @@ namespace SteamWorkshopSynchronizer.Steam
             var path = Regex.Matches(output, "Downloaded.+?\"(?<path>.+?)\"",
                     RegexOptions.Compiled | RegexOptions.ExplicitCapture).Cast<Match>()
                 .Select(x => x.Groups["path"].Value)
-                .Single();
+                .SingleOrDefault();
+            if (path == null)
+                throw new Exception($"Download of {fileId} failed.");
             return path;
         }
 
@@ -75,7 +77,19 @@ namespace SteamWorkshopSynchronizer.Steam
                     await foreach (var o in instance.Output.ReadAllAsync(ct))
                     {
                         allOutput.AppendLine(o);
-                        _logger.LogDebug(o);
+
+                        if (o.Contains("error", StringComparison.OrdinalIgnoreCase))
+                        {
+                            _logger.LogError(o);
+                        }
+                        else if (o.Contains("warning", StringComparison.OrdinalIgnoreCase))
+                        {
+                            _logger.LogWarning(o);
+                        }
+                        else
+                        {
+                            _logger.LogDebug(o);
+                        }
                     }
                 }
                 catch (OperationCanceledException)

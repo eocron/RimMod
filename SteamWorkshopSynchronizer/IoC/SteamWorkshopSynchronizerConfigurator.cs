@@ -64,7 +64,9 @@ namespace SteamWorkshopSynchronizer.IoC
                     r => new TableEntitySynchronizationAsyncCommand<SteamWorkshopTableEntity>(
                         r.Resolve<ITableEntityProvider<SteamWorkshopTableEntity>>(sourceName),
                         r.Resolve<ITableEntityProvider<SteamWorkshopTableEntity>>(targetName),
-                        r.Resolve<ITableEntityManager<SteamWorkshopTableEntity>>(targetName),
+                        new ErrorSuppressingTableEntityManager<SteamWorkshopTableEntity>(
+                            r.Resolve<ITableEntityManager<SteamWorkshopTableEntity>>(targetName),
+                            r.Resolve<ILogger<ErrorSuppressingTableEntityManager<SteamWorkshopTableEntity>>>()),
                         settings.Mode,
                         r.Resolve<ILogger<TableEntitySynchronizationAsyncCommand<SteamWorkshopTableEntity>>>()),
                     nameof(TableEntitySynchronizationAsyncCommand<SteamWorkshopTableEntity>))
