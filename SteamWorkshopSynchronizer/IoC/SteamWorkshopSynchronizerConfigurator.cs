@@ -52,7 +52,9 @@ namespace SteamWorkshopSynchronizer.IoC
                         r.Resolve<ILogger<FolderTableEntityManager<SteamWorkshopTableEntity>>>(),
                         r.Resolve<IFolderUpdater<SteamWorkshopTableEntity>>()))
                 .RegisterSingleton<ITableEntityManager<SteamWorkshopTableEntity>>(
-                    r => r.Resolve<FolderTableEntityManager<SteamWorkshopTableEntity>>(),
+                    r => new MonitoredTableEntityManager<SteamWorkshopTableEntity>(
+                        r.Resolve<FolderTableEntityManager<SteamWorkshopTableEntity>>(),
+                        r.Resolve<ILogger<FolderTableEntityManager<SteamWorkshopTableEntity>>>()),
                     name: targetName)
                 .RegisterSingleton<ITableEntityProvider<SteamWorkshopTableEntity>>(
                     r => r.Resolve<FolderTableEntityManager<SteamWorkshopTableEntity>>(),
@@ -68,9 +70,7 @@ namespace SteamWorkshopSynchronizer.IoC
                         r.Resolve<ITableEntityProvider<SteamWorkshopTableEntity>>(sourceName),
                         r.Resolve<ITableEntityProvider<SteamWorkshopTableEntity>>(targetName),
                         new ErrorSuppressingTableEntityManager<SteamWorkshopTableEntity>(
-                            new MonitoredTableEntityManager<SteamWorkshopTableEntity>(
-                                r.Resolve<ITableEntityManager<SteamWorkshopTableEntity>>(targetName),
-                                r.Resolve<ILoggerFactory>().CreateLogger(targetName))),
+                            r.Resolve<ITableEntityManager<SteamWorkshopTableEntity>>(targetName)),
                         settings.Mode,
                         true,
                         r.Resolve<ILogger<TableEntitySynchronizationAsyncCommand<SteamWorkshopTableEntity>>>()),
