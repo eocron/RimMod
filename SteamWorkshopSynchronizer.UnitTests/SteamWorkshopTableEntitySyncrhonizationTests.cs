@@ -13,7 +13,7 @@ namespace SteamWorkshopSynchronizer.UnitTests
         private CancellationToken _ct;
         private Fixture _fixture;
         private SynchronizationMode _mode;
-        private IAsyncCommand _sync;
+        private IAsyncJob _sync;
         private Mock<ITableEntityProvider<SteamWorkshopTableEntity>> _sourceProvider;
         private Mock<ITableEntityProvider<SteamWorkshopTableEntity>> _targetProvider;
         private Mock<ITableEntityManager<SteamWorkshopTableEntity>> _targetManager;

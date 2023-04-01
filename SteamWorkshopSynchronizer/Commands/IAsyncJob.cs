@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 
 namespace SteamWorkshopSynchronizer.Commands
 {
-    public interface IAsyncCommand
+    public interface IAsyncJob
     {
         Task RunAsync(CancellationToken ct);
     }

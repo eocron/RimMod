@@ -5,6 +5,7 @@ using SteamWorkshopSynchronizer.Steam;
 
 namespace SteamWorkshopSynchronizer.UnitTests;
 
+[TestFixture(Category = "Integration")]
 public class SteamWorkshopTableEntityProviderTests
 {
     private ITableEntityProvider<SteamWorkshopTableEntity> _provider;

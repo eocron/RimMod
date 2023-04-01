@@ -45,7 +45,7 @@ namespace SteamWorkshopSynchronizer
             {
                 try
                 {
-                    await container.Resolve<IAsyncCommand>().RunAsync(cts.Token);
+                    await container.Resolve<IAsyncJob>().RunAsync(cts.Token);
                 }
                 catch (Exception e)
                 {

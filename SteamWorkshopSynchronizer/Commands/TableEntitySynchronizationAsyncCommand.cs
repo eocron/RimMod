@@ -7,7 +7,7 @@ using SteamWorkshopSynchronizer.Settings;
 
 namespace SteamWorkshopSynchronizer.Commands
 {
-    public sealed class TableEntitySynchronizationAsyncCommand<TEntityInfo> : IAsyncCommand
+    public sealed class TableEntitySynchronizationAsyncCommand<TEntityInfo> : IAsyncJob
         where TEntityInfo : class, IFileTableEntity
     {
         private readonly ITableEntityProvider<TEntityInfo> _sourceProvider;

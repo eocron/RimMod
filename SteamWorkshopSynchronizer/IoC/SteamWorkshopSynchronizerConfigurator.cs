@@ -41,7 +41,7 @@ namespace SteamWorkshopSynchronizer.IoC
                         settings.AllFileIds),
                 name: sourceName);
             
-            container.RegisterSingleton<IAsyncCommand>(
+            container.RegisterSingleton<IAsyncJob>(
                 r => new TableEntitySynchronizationAsyncCommand<SteamWorkshopTableEntity>(
                     r.Resolve<ITableEntityProvider<SteamWorkshopTableEntity>>(sourceName),
                     r.Resolve<ITableEntityProvider<SteamWorkshopTableEntity>>(targetName),
