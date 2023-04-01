@@ -54,7 +54,9 @@ namespace SteamWorkshopSynchronizer.Steam
 
         private static SteamWorkshopTableEntity Convert(WorkshopItemDetails details)
         {
-            var lastUpdated = DateTimeOffset.FromUnixTimeSeconds(details.LastUpdatedTimestamp).ToUniversalTime()
+            var lastUpdated = DateTimeOffset
+                .FromUnixTimeSeconds(details.LastUpdatedTimestamp)
+                .ToUniversalTime()
                 .DateTime;
             return new SteamWorkshopTableEntity
             {

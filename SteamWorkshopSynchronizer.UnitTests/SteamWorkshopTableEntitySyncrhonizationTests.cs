@@ -58,7 +58,7 @@ namespace SteamWorkshopSynchronizer.UnitTests
 
         private static T DeepClone<T>(T obj)
         {
-            return JsonConvert.DeserializeObject<T>(JsonConvert.SerializeObject(obj));
+            return JsonConvert.DeserializeObject<T>(JsonConvert.SerializeObject(obj))!;
         }
 
         private void SetEntities(List<SteamWorkshopTableEntity> sourceSet, List<SteamWorkshopTableEntity> targetSet)

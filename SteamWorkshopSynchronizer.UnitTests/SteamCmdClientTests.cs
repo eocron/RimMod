@@ -1,4 +1,5 @@
-﻿using Moq;
+﻿using FluentAssertions;
+using Moq;
 using NUnit.Framework;
 using SteamWorkshopSynchronizer.Commands;
 using SteamWorkshopSynchronizer.Steam;
@@ -6,7 +7,7 @@ using SteamWorkshopSynchronizer.Steam;
 namespace SteamWorkshopSynchronizer.UnitTests
 {
     [TestFixture(Category = "Integration")]
-    public class SteamCmdClientTests
+    public class SteamClientTests
     {
         private string _downloadedFolder;
         private Uri _downloadLink;
@@ -18,7 +19,7 @@ namespace SteamWorkshopSynchronizer.UnitTests
         private Task _task;
 
         [OneTimeSetUp]
-        public async Task OneTimeSetUp()
+        public void OneTimeSetUp()
         {
             var mock = new Mock<IHttpClientFactory>(MockBehavior.Strict);
             mock.Setup(x => x.CreateClient(It.IsAny<string>())).Returns<string>((x) =>
@@ -39,7 +40,7 @@ namespace SteamWorkshopSynchronizer.UnitTests
                     _downloadedFolder,
                     _tmpFolder,
                     false));
-            _steamCmdClient = new SteamClient(null, Path.Combine(_downloadedFolder, "steamcmd.exe"));
+            _steamCmdClient = new SteamClient(null, _downloadedFolder, new TestLogger());
             _cts = new CancellationTokenSource();
             
             _task = Task.Run(() => _job.RunAsync(_cts.Token), _cts.Token);
@@ -53,9 +54,10 @@ namespace SteamWorkshopSynchronizer.UnitTests
         }
 
         [Test]
-        public async Task DownloadWorkshopItemAndReturnPathAsync()
+        public async Task DownloadWorkshopItem()
         {
-            var output = await _steamCmdClient.DownloadWorkshopItemAndReturnPathAsync(294100, 2952716728L, _cts.Token);
+            var path = await _steamCmdClient.DownloadWorkshopItemAndReturnPathAsync(294100, 2952716728L, _cts.Token);
+            Directory.Exists(path).Should().BeTrue();
         }
     }
 }

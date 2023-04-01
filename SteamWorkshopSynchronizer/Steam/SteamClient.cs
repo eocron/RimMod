@@ -1,21 +1,25 @@
 ﻿using System;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 
 namespace SteamWorkshopSynchronizer.Steam
 {
-    public class SteamClient : ISteamClient
+    public sealed class SteamClient : ISteamClient
     {
         private readonly SteamClientCredentials _credentials;
         private readonly string _steamCmdExePath;
+        private readonly ILogger _logger;
 
-        public SteamClient(SteamClientCredentials credentials, string steamCmdExePath)
+        public SteamClient(SteamClientCredentials credentials, string steamCmdFolderPath, ILogger logger)
         {
             _credentials = credentials;
-            _steamCmdExePath = steamCmdExePath;
+            _steamCmdExePath = Path.Combine(steamCmdFolderPath, "steamcmd.exe");
+            _logger = logger;
         }
 
         public async Task<string> DownloadWorkshopItemAndReturnPathAsync(int appId, long fileId, CancellationToken ct)
@@ -71,6 +75,7 @@ namespace SteamWorkshopSynchronizer.Steam
                     await foreach (var o in instance.Output.ReadAllAsync(ct))
                     {
                         allOutput.AppendLine(o);
+                        _logger.LogDebug(o);
                     }
                 }
                 catch (OperationCanceledException)
@@ -82,10 +87,6 @@ namespace SteamWorkshopSynchronizer.Steam
             try
             {
                 statusCode = await instance.RunToCompletionAsync(ct).ConfigureAwait(false);
-            }
-            catch (Exception e)
-            {
-                throw;
             }
             finally
             {

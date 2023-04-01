@@ -15,7 +15,7 @@ namespace SteamWorkshopSynchronizer.Steam.Contract
         [DataMember(Name = "time_updated")]
         public long LastUpdatedTimestamp { get; set; }
         [DataMember(Name = "creator_app_id")]
-        public long AppId { get; set; }
+        public int AppId { get; set; }
         [DataMember(Name = "file_size")]
         public long FileSize { get; set; }
 

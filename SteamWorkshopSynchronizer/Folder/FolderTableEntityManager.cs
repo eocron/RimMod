@@ -14,11 +14,15 @@ namespace SteamWorkshopSynchronizer.Folder
     {
         private readonly string _folder;
         private readonly ILogger _logger;
+        private readonly IFolderUpdater<T> _updater;
+        private readonly string _manifestName;
 
-        public FolderTableEntityManager(string folder, ILogger logger)
+        public FolderTableEntityManager(string folder, ILogger logger, IFolderUpdater<T> updater = null)
         {
             _folder = folder;
             _logger = logger;
+            _updater = updater;
+            _manifestName = "sws_info.json";
         }
 
         public async Task<List<T>> GetAllEntitiesAsync(CancellationToken ct)
@@ -48,20 +52,26 @@ namespace SteamWorkshopSynchronizer.Folder
 
         public async Task UpdateEntityAsync(T entity, CancellationToken ct)
         {
-            await CreateOrUpdateManifestAsync(entity, ct).ConfigureAwait(false);
+            await InternalCreateOrUpdateAsync(entity, ct).ConfigureAwait(false);
         }
 
         public async Task CreateEntityAsync(T entity, CancellationToken ct)
         {
-            await CreateOrUpdateManifestAsync(entity, ct).ConfigureAwait(false);
+            await InternalCreateOrUpdateAsync(entity, ct).ConfigureAwait(false);
         }
 
-        private async Task CreateOrUpdateManifestAsync(T entity, CancellationToken ct)
+        private async Task InternalCreateOrUpdateAsync(T entity, CancellationToken ct)
         {
             var found = (await InternalGetOrDefaultAsync(entity.Key, ct).ConfigureAwait(false))?.DirectoryPath ?? Path.Combine(_folder, entity.EscapedTitle);
             var manifestPath = GetManifestPath(found);
             if(!Directory.Exists(found))
                 Directory.CreateDirectory(found);
+
+            if (_updater != null)
+            {
+                await _updater.UpdateAsync(entity, found, ct).ConfigureAwait(false);
+            }
+
             await File.WriteAllTextAsync(manifestPath, JsonConvert.SerializeObject(entity), ct).ConfigureAwait(false);
         }
         
@@ -111,9 +121,9 @@ namespace SteamWorkshopSynchronizer.Folder
             return null;
         }
 
-        private static string GetManifestPath(string dirPath)
+        private string GetManifestPath(string dirPath)
         {
-            return Path.Combine(dirPath, "sws_info.json");
+            return Path.Combine(dirPath, _manifestName);
         }
         
         private class Entry
