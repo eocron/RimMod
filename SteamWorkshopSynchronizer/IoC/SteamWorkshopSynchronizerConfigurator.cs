@@ -4,6 +4,7 @@ using DryIoc;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using SteamWorkshopSynchronizer.Commands;
+using SteamWorkshopSynchronizer.Core;
 using SteamWorkshopSynchronizer.Folder;
 using SteamWorkshopSynchronizer.Settings;
 using SteamWorkshopSynchronizer.Steam;
@@ -65,8 +66,9 @@ namespace SteamWorkshopSynchronizer.IoC
                         r.Resolve<ITableEntityProvider<SteamWorkshopTableEntity>>(sourceName),
                         r.Resolve<ITableEntityProvider<SteamWorkshopTableEntity>>(targetName),
                         new ErrorSuppressingTableEntityManager<SteamWorkshopTableEntity>(
+                            new MonitoredTableEntityManager<SteamWorkshopTableEntity>(
                             r.Resolve<ITableEntityManager<SteamWorkshopTableEntity>>(targetName),
-                            r.Resolve<ILogger<ErrorSuppressingTableEntityManager<SteamWorkshopTableEntity>>>()),
+                            r.Resolve<ILoggerFactory>().CreateLogger(targetName))),
                         settings.Mode,
                         r.Resolve<ILogger<TableEntitySynchronizationAsyncCommand<SteamWorkshopTableEntity>>>()),
                     nameof(TableEntitySynchronizationAsyncCommand<SteamWorkshopTableEntity>))

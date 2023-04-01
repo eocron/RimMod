@@ -1,4 +1,5 @@
 ﻿using System;
+using SteamWorkshopSynchronizer.Core;
 
 namespace SteamWorkshopSynchronizer.Steam
 {

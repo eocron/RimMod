@@ -1,7 +1,7 @@
 ﻿using System.Threading;
 using System.Threading.Tasks;
 
-namespace SteamWorkshopSynchronizer
+namespace SteamWorkshopSynchronizer.Core
 {
     public interface ITableEntityManager<in TEntity>
         where TEntity : ITableEntity

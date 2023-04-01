@@ -1,4 +1,4 @@
-﻿namespace SteamWorkshopSynchronizer
+﻿namespace SteamWorkshopSynchronizer.Core
 {
     public interface ITableEntity
     {

@@ -5,6 +5,7 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
+using SteamWorkshopSynchronizer.Core;
 using SteamWorkshopSynchronizer.Steam.Contract;
 
 namespace SteamWorkshopSynchronizer.Steam

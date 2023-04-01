@@ -1,19 +1,16 @@
-﻿using System;
-using System.Threading;
+﻿using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 
-namespace SteamWorkshopSynchronizer
+namespace SteamWorkshopSynchronizer.Core
 {
     public sealed class ErrorSuppressingTableEntityManager<T> : ITableEntityManager<T> where T : ITableEntity
     {
         private readonly ITableEntityManager<T> _inner;
-        private readonly ILogger _logger;
 
-        public ErrorSuppressingTableEntityManager(ITableEntityManager<T> inner, ILogger logger)
+        public ErrorSuppressingTableEntityManager(ITableEntityManager<T> inner)
         {
             _inner = inner;
-            _logger = logger;
         }
 
         public async Task DeleteEntityAsync(string key, CancellationToken ct)
@@ -22,9 +19,8 @@ namespace SteamWorkshopSynchronizer
             {
                 await _inner.DeleteEntityAsync(key, ct).ConfigureAwait(false);
             }
-            catch (Exception ex)
+            catch
             {
-                _logger.LogError(ex.ToString());
             }
         }
 
@@ -34,9 +30,8 @@ namespace SteamWorkshopSynchronizer
             {
                 await _inner.UpdateEntityAsync(entity, ct).ConfigureAwait(false);
             }
-            catch (Exception ex)
+            catch
             {
-                _logger.LogError(ex.ToString());
             }
         }
 
@@ -46,9 +41,8 @@ namespace SteamWorkshopSynchronizer
             {
                 await _inner.CreateEntityAsync(entity, ct).ConfigureAwait(false);
             }
-            catch (Exception ex)
+            catch
             {
-                _logger.LogError(ex.ToString());
             }
         }
     }

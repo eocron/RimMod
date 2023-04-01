@@ -1,6 +1,7 @@
 using FluentAssertions;
 using Moq;
 using NUnit.Framework;
+using SteamWorkshopSynchronizer.Core;
 using SteamWorkshopSynchronizer.Steam;
 
 namespace SteamWorkshopSynchronizer.UnitTests;

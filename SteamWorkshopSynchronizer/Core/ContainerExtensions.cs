@@ -1,7 +1,7 @@
 ﻿using System;
 using DryIoc;
 
-namespace SteamWorkshopSynchronizer.IoC
+namespace SteamWorkshopSynchronizer.Core
 {
     public static class ContainerExtensions
     {

@@ -3,6 +3,7 @@ using Moq;
 using Newtonsoft.Json;
 using NUnit.Framework;
 using SteamWorkshopSynchronizer.Commands;
+using SteamWorkshopSynchronizer.Core;
 using SteamWorkshopSynchronizer.Settings;
 using SteamWorkshopSynchronizer.Steam;
 

@@ -1,6 +1,7 @@
 ﻿using AutoFixture;
 using FluentAssertions;
 using NUnit.Framework;
+using SteamWorkshopSynchronizer.Core;
 using SteamWorkshopSynchronizer.Folder;
 using SteamWorkshopSynchronizer.Steam;
 

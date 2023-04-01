@@ -2,6 +2,7 @@
 using Moq;
 using NUnit.Framework;
 using SteamWorkshopSynchronizer.Commands;
+using SteamWorkshopSynchronizer.Core;
 using SteamWorkshopSynchronizer.Steam;
 
 namespace SteamWorkshopSynchronizer.UnitTests

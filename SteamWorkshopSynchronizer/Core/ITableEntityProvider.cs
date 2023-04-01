@@ -2,7 +2,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace SteamWorkshopSynchronizer
+namespace SteamWorkshopSynchronizer.Core
 {
     public interface ITableEntityProvider<TEntity>
         where TEntity : ITableEntity

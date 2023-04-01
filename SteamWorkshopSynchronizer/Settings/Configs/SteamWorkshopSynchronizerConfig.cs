@@ -1,4 +1,4 @@
-﻿namespace SteamWorkshopSynchronizer.Settings
+﻿namespace SteamWorkshopSynchronizer.Settings.Configs
 {
     public class SteamWorkshopSynchronizerConfig
     {

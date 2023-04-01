@@ -3,6 +3,7 @@ using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 using Microsoft.Extensions.Configuration;
+using SteamWorkshopSynchronizer.Settings.Configs;
 
 namespace SteamWorkshopSynchronizer.Settings
 {
