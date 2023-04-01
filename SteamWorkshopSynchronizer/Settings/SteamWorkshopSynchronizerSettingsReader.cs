@@ -6,7 +6,8 @@ namespace SteamWorkshopSynchronizer.Settings
     {
         public static SteamWorkshopSynchronizerSettings Read(IConfiguration configuration)
         {
-            return configuration.Get<SteamWorkshopSynchronizerSettings>();
+            var settings = configuration.Get<SteamWorkshopSynchronizerSettings>();
+            return settings;
         }
     }
 }

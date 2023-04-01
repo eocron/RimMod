@@ -16,6 +16,10 @@ namespace SteamWorkshopSynchronizer.Folder
         private readonly ILogger _logger;
         private readonly IFolderUpdater<T> _updater;
         private readonly string _manifestName;
+        private  static readonly JsonSerializerSettings JsonSerializerSettings = new JsonSerializerSettings()
+        {
+            Formatting = Formatting.Indented
+        };
 
         public FolderTableEntityManager(string folder, ILogger logger, IFolderUpdater<T> updater = null)
         {
@@ -72,7 +76,7 @@ namespace SteamWorkshopSynchronizer.Folder
                 await _updater.UpdateAsync(entity, found, ct).ConfigureAwait(false);
             }
 
-            await File.WriteAllTextAsync(manifestPath, JsonConvert.SerializeObject(entity), ct).ConfigureAwait(false);
+            await File.WriteAllTextAsync(manifestPath, JsonConvert.SerializeObject(entity, JsonSerializerSettings), ct).ConfigureAwait(false);
         }
         
         
@@ -110,7 +114,7 @@ namespace SteamWorkshopSynchronizer.Folder
                 return new Entry
                 {
                     DirectoryPath = dirPath,
-                    Manifest = JsonConvert.DeserializeObject<T>(text)
+                    Manifest = JsonConvert.DeserializeObject<T>(text, JsonSerializerSettings)
                 };
             }
             catch (Exception e)
