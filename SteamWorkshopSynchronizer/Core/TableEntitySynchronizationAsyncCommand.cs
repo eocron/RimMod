@@ -8,7 +8,7 @@ using SteamWorkshopSynchronizer.Settings;
 
 namespace SteamWorkshopSynchronizer.Core
 {
-    public sealed class TableEntitySynchronizationAsyncCommand<TEntityInfo> : IAsyncJob
+    public class TableEntitySynchronizationAsyncCommand<TEntityInfo> : IAsyncJob
         where TEntityInfo : class, IFileTableEntity
     {
         private readonly ITableEntityProvider<TEntityInfo> _sourceProvider;
@@ -56,21 +56,22 @@ namespace SteamWorkshopSynchronizer.Core
             _logger.LogInformation("ToDelete: {toDelete}, ToCreate: {toCreate}, ToUpdate: {toUpdate}", toDelete.Length,
                 toCreate.Length, toUpdate.Length);
 
-            await RunForEachAsync(toCreate, async tableEntity =>
-            {
-                await _targetManager.CreateEntityAsync(tableEntity, ct).ConfigureAwait(false);
-                _logger.LogInformation("Created {escapedTitle}", tableEntity.EscapedTitle);
-            }).ConfigureAwait(false);
-            await RunForEachAsync(toUpdate, async tableEntity =>
-            {
-                await _targetManager.UpdateEntityAsync(tableEntity, ct).ConfigureAwait(false);
-                _logger.LogInformation("Updated {escapedTitle}", tableEntity.EscapedTitle);
-            }).ConfigureAwait(false);
-            await RunForEachAsync(toDelete, async tableEntity =>
-            {
-                await _targetManager.DeleteEntityAsync(tableEntity.Key, ct);
-                _logger.LogInformation("Deleted {escapedTitle}", tableEntity.EscapedTitle);
-            }).ConfigureAwait(false);
+            await RunForEachAsync(toCreate, tableEntity => OnCreateEntityAsync(tableEntity, ct)).ConfigureAwait(false);
+            await RunForEachAsync(toUpdate, tableEntity => OnUpdateEntityAsync(tableEntity, ct)).ConfigureAwait(false);
+            await RunForEachAsync(toDelete, tableEntity => OnDeleteEntityAsync(tableEntity, ct)).ConfigureAwait(false);
+        }
+
+        protected virtual async Task OnCreateEntityAsync(TEntityInfo tableEntity, CancellationToken ct)
+        {
+            await _targetManager.CreateEntityAsync(tableEntity, ct).ConfigureAwait(false);
+        }
+        protected virtual async Task OnUpdateEntityAsync(TEntityInfo tableEntity, CancellationToken ct)
+        {
+            await _targetManager.UpdateEntityAsync(tableEntity, ct).ConfigureAwait(false);
+        }
+        protected virtual async Task OnDeleteEntityAsync(TEntityInfo tableEntity, CancellationToken ct)
+        {
+            await _targetManager.DeleteEntityAsync(tableEntity.Key, ct).ConfigureAwait(false);
         }
 
         private async Task RunForEachAsync<T>(IEnumerable<T> items, Func<T, Task> action)

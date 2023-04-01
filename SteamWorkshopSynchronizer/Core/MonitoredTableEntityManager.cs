@@ -5,7 +5,7 @@ using Microsoft.Extensions.Logging;
 
 namespace SteamWorkshopSynchronizer.Core
 {
-    public class MonitoredTableEntityManager<T> : ITableEntityManager<T> where T : ITableEntity
+    public class MonitoredTableEntityManager<T> : ITableEntityManager<T> where T : IFileTableEntity
     {
         private readonly ITableEntityManager<T> _inner;
         private readonly ILogger _logger;
@@ -21,7 +21,7 @@ namespace SteamWorkshopSynchronizer.Core
             try
             {
                 await _inner.DeleteEntityAsync(key, ct).ConfigureAwait(false);
-                _logger.LogDebug("Deleted {key}", key);
+                _logger.LogInformation("Deleted {key}", key);
             }
             catch (Exception e)
             {
@@ -35,7 +35,7 @@ namespace SteamWorkshopSynchronizer.Core
             try
             {
                 await _inner.UpdateEntityAsync(entity, ct).ConfigureAwait(false);
-                _logger.LogDebug("Updated {key}", entity.Key);
+                _logger.LogInformation("Updated {key}", entity.EscapedTitle);
             }
             catch (Exception e)
             {
@@ -49,7 +49,7 @@ namespace SteamWorkshopSynchronizer.Core
             try
             {
                 await _inner.CreateEntityAsync(entity, ct).ConfigureAwait(false);
-                _logger.LogDebug("Created {key}", entity.Key);
+                _logger.LogInformation("Created {key}", entity.EscapedTitle);
             }
             catch (Exception e)
             {
