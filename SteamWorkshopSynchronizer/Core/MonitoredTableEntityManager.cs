@@ -21,7 +21,7 @@ namespace SteamWorkshopSynchronizer.Core
             try
             {
                 await _inner.DeleteEntityAsync(key, ct).ConfigureAwait(false);
-                _logger.LogInformation("Deleted {key}", key);
+                _logger.LogDebug("Deleted {key}", key);
             }
             catch (Exception e)
             {
@@ -35,7 +35,7 @@ namespace SteamWorkshopSynchronizer.Core
             try
             {
                 await _inner.UpdateEntityAsync(entity, ct).ConfigureAwait(false);
-                _logger.LogInformation("Updated {key}", entity.Key);
+                _logger.LogDebug("Updated {key}", entity.Key);
             }
             catch (Exception e)
             {
@@ -49,7 +49,7 @@ namespace SteamWorkshopSynchronizer.Core
             try
             {
                 await _inner.CreateEntityAsync(entity, ct).ConfigureAwait(false);
-                _logger.LogInformation("Created {key}", entity.Key);
+                _logger.LogDebug("Created {key}", entity.Key);
             }
             catch (Exception e)
             {

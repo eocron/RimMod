@@ -2,7 +2,6 @@
 using Moq;
 using Newtonsoft.Json;
 using NUnit.Framework;
-using SteamWorkshopSynchronizer.Commands;
 using SteamWorkshopSynchronizer.Core;
 using SteamWorkshopSynchronizer.Settings;
 using SteamWorkshopSynchronizer.Steam;
@@ -31,6 +30,7 @@ namespace SteamWorkshopSynchronizer.UnitTests
                 _targetProvider.Object, 
                 _targetManager.Object,
                 _mode, 
+                true,
                 new TestLogger());
             _ct = new CancellationToken();
             _fixture = new Fixture();

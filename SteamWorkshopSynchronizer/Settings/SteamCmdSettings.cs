@@ -10,5 +10,6 @@ namespace SteamWorkshopSynchronizer.Settings
         public string FolderPath { get; set; }
         public Uri DownloadLink { get; set; }
         public bool ForceUpdate { get; set; }
+        public int MaxParallelInstanceCount { get; set; }
     }
 }

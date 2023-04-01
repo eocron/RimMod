@@ -3,7 +3,6 @@ using System.Net.Http;
 using DryIoc;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using SteamWorkshopSynchronizer.Commands;
 using SteamWorkshopSynchronizer.Core;
 using SteamWorkshopSynchronizer.Folder;
 using SteamWorkshopSynchronizer.Settings;
@@ -37,10 +36,13 @@ namespace SteamWorkshopSynchronizer.IoC
                         settings.SteamCmd.ForceUpdate),
                     name: nameof(WindowsSteamCmdDownloadJob))
                 .RegisterSingleton<ISteamClient>(
-                    r => new SteamClient(
-                        settings.SteamCmd.Credentials,
-                        settings.SteamCmd.FolderPath,
-                        r.Resolve<ILogger<SteamClient>>()))
+                    r =>
+                        new SemaphoreSteamClient(
+                            new SteamClient(
+                                settings.SteamCmd.Credentials,
+                                settings.SteamCmd.FolderPath,
+                                r.Resolve<ILogger<SteamClient>>()),
+                            settings.SteamCmd.MaxParallelInstanceCount))
                 .RegisterSingleton<IFolderUpdater<SteamWorkshopTableEntity>>(
                     r => new SteamWorkshopTableEntityUpdater(
                         r.Resolve<ISteamClient>()))
@@ -67,16 +69,18 @@ namespace SteamWorkshopSynchronizer.IoC
                         r.Resolve<ITableEntityProvider<SteamWorkshopTableEntity>>(targetName),
                         new ErrorSuppressingTableEntityManager<SteamWorkshopTableEntity>(
                             new MonitoredTableEntityManager<SteamWorkshopTableEntity>(
-                            r.Resolve<ITableEntityManager<SteamWorkshopTableEntity>>(targetName),
-                            r.Resolve<ILoggerFactory>().CreateLogger(targetName))),
+                                r.Resolve<ITableEntityManager<SteamWorkshopTableEntity>>(targetName),
+                                r.Resolve<ILoggerFactory>().CreateLogger(targetName))),
                         settings.Mode,
+                        true,
                         r.Resolve<ILogger<TableEntitySynchronizationAsyncCommand<SteamWorkshopTableEntity>>>()),
                     nameof(TableEntitySynchronizationAsyncCommand<SteamWorkshopTableEntity>))
                 .RegisterSingleton<IAsyncJob>(
                     r => new CompoundAsyncJob(
                         false,
                         r.Resolve<IAsyncJob>(nameof(WindowsSteamCmdDownloadJob)),
-                        r.Resolve<IAsyncJob>(nameof(TableEntitySynchronizationAsyncCommand<SteamWorkshopTableEntity>))));
+                        r.Resolve<IAsyncJob>(
+                            nameof(TableEntitySynchronizationAsyncCommand<SteamWorkshopTableEntity>))));
         }
     }
 }

@@ -1,12 +1,12 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using SteamWorkshopSynchronizer.Core;
 using SteamWorkshopSynchronizer.Settings;
 
-namespace SteamWorkshopSynchronizer.Commands
+namespace SteamWorkshopSynchronizer.Core
 {
     public sealed class TableEntitySynchronizationAsyncCommand<TEntityInfo> : IAsyncJob
         where TEntityInfo : class, IFileTableEntity
@@ -15,6 +15,7 @@ namespace SteamWorkshopSynchronizer.Commands
         private readonly ITableEntityProvider<TEntityInfo> _targetProvider;
         private readonly ITableEntityManager<TEntityInfo> _targetManager;
         private readonly SynchronizationMode _mode;
+        private readonly bool _inParallel;
         private readonly ILogger _logger;
 
         public TableEntitySynchronizationAsyncCommand(
@@ -22,12 +23,14 @@ namespace SteamWorkshopSynchronizer.Commands
             ITableEntityProvider<TEntityInfo> targetProvider,
             ITableEntityManager<TEntityInfo> targetManager,
             SynchronizationMode mode,
+            bool inParallel,
             ILogger logger)
         {
             _sourceProvider = sourceProvider;
             _targetProvider = targetProvider;
             _targetManager = targetManager;
             _mode = mode;
+            _inParallel = inParallel;
             _logger = logger;
         }
 
@@ -53,22 +56,35 @@ namespace SteamWorkshopSynchronizer.Commands
             _logger.LogInformation("ToDelete: {toDelete}, ToCreate: {toCreate}, ToUpdate: {toUpdate}", toDelete.Length,
                 toCreate.Length, toUpdate.Length);
 
-            foreach (var tableEntity in toCreate)
+            await RunForEachAsync(toCreate, async tableEntity =>
             {
                 await _targetManager.CreateEntityAsync(tableEntity, ct).ConfigureAwait(false);
                 _logger.LogInformation("Created {escapedTitle}", tableEntity.EscapedTitle);
-            }
-
-            foreach (var tableEntity in toUpdate)
+            }).ConfigureAwait(false);
+            await RunForEachAsync(toUpdate, async tableEntity =>
             {
                 await _targetManager.UpdateEntityAsync(tableEntity, ct).ConfigureAwait(false);
                 _logger.LogInformation("Updated {escapedTitle}", tableEntity.EscapedTitle);
-            }
-
-            foreach (var tableEntity in toDelete)
+            }).ConfigureAwait(false);
+            await RunForEachAsync(toDelete, async tableEntity =>
             {
                 await _targetManager.DeleteEntityAsync(tableEntity.Key, ct);
                 _logger.LogInformation("Deleted {escapedTitle}", tableEntity.EscapedTitle);
+            }).ConfigureAwait(false);
+        }
+
+        private async Task RunForEachAsync<T>(IEnumerable<T> items, Func<T, Task> action)
+        {
+            if (_inParallel)
+            {
+                await Task.WhenAll(items.Select(action)).ConfigureAwait(false);
+            }
+            else
+            {
+                foreach (var i in items)
+                {
+                    await action(i).ConfigureAwait(false);
+                }
             }
         }
 
