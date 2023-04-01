@@ -3,9 +3,8 @@ using System.Threading.Tasks;
 
 namespace SteamWorkshopSynchronizer.Steam
 {
-    public interface ISteamCmdClient
+    public interface ISteamClient
     {
-        Task LoginAnonymousAsync(CancellationToken ct);
         Task<string> DownloadWorkshopItemAndReturnPathAsync(int appId, long fileId, CancellationToken ct);
     }
 }

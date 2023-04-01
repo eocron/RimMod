@@ -1,5 +1,4 @@
-﻿using FluentAssertions;
-using Moq;
+﻿using Moq;
 using NUnit.Framework;
 using SteamWorkshopSynchronizer.Commands;
 using SteamWorkshopSynchronizer.Steam;
@@ -15,8 +14,7 @@ namespace SteamWorkshopSynchronizer.UnitTests
         private string _tmpFolder;
         private string _rootFolder;
         private CancellationTokenSource _cts;
-        private SteamCmdProcessJob _steamCmdProcess;
-        private ISteamCmdClient _steamCmdClient;
+        private ISteamClient _steamCmdClient;
         private Task _task;
 
         [OneTimeSetUp]
@@ -32,8 +30,6 @@ namespace SteamWorkshopSynchronizer.UnitTests
             _rootFolder = Path.Combine(Path.GetTempPath(), "tests", nameof(WindowsSteamCmdDownloadJobTests));
             _downloadedFolder = Path.Combine(_rootFolder, "downloaded");
             _tmpFolder = Path.Combine(_rootFolder, "temp");
-            _steamCmdProcess =
-                new SteamCmdProcessJob(Path.Combine(_downloadedFolder, "steamcmd.exe"), new TestLogger());
             _job = new CompoundAsyncJob(false,
                 new WindowsSteamCmdDownloadJob(
                     mock.Object,
@@ -42,9 +38,8 @@ namespace SteamWorkshopSynchronizer.UnitTests
                     _downloadLink,
                     _downloadedFolder,
                     _tmpFolder,
-                    false),
-                _steamCmdProcess);
-            _steamCmdClient = new SteamCmdClient(_steamCmdProcess);
+                    false));
+            _steamCmdClient = new SteamClient(null, Path.Combine(_downloadedFolder, "steamcmd.exe"));
             _cts = new CancellationTokenSource();
             
             _task = Task.Run(() => _job.RunAsync(_cts.Token), _cts.Token);
@@ -58,9 +53,9 @@ namespace SteamWorkshopSynchronizer.UnitTests
         }
 
         [Test]
-        public async Task LoginAnonymous()
+        public async Task DownloadWorkshopItemAndReturnPathAsync()
         {
-                await _steamCmdClient.LoginAnonymousAsync(_cts.Token);
+            var output = await _steamCmdClient.DownloadWorkshopItemAndReturnPathAsync(294100, 2952716728L, _cts.Token);
         }
     }
 }

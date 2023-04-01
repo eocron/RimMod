@@ -3,7 +3,7 @@ using System.IO;
 using System.Linq;
 using System.Runtime.Serialization;
 
-namespace SteamWorkshopSynchronizer.Steam
+namespace SteamWorkshopSynchronizer.Steam.Contract
 {
     [DataContract(Namespace = ApplicationConst.EntitiesNamespace, Name = "SteamItemDetails")]
     public class WorkshopItemDetails

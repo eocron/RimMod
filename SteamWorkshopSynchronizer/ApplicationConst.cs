@@ -1,6 +1,4 @@
-﻿using System.Net;
-
-namespace SteamWorkshopSynchronizer.Steam
+﻿namespace SteamWorkshopSynchronizer
 {
     public static class ApplicationConst
     {

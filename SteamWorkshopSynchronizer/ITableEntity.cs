@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace SteamWorkshopSynchronizer
+﻿namespace SteamWorkshopSynchronizer
 {
     public interface ITableEntity
     {

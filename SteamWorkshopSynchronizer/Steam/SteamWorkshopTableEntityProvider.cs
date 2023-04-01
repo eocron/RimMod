@@ -2,10 +2,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
-using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
+using SteamWorkshopSynchronizer.Steam.Contract;
 
 namespace SteamWorkshopSynchronizer.Steam
 {

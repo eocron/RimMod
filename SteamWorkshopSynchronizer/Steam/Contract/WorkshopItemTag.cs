@@ -1,6 +1,6 @@
 ﻿using System.Runtime.Serialization;
 
-namespace SteamWorkshopSynchronizer.Steam
+namespace SteamWorkshopSynchronizer.Steam.Contract
 {
     [DataContract(Namespace = ApplicationConst.EntitiesNamespace, Name = "SteamItemTag")]
     public class WorkshopItemTag

@@ -4,7 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using SteamWorkshopSynchronizer.Commands;
 
-namespace SteamWorkshopSynchronizer.Steam
+namespace SteamWorkshopSynchronizer
 {
     public sealed class CompoundAsyncJob : IAsyncJob
     {
