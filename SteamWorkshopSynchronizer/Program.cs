@@ -20,8 +20,9 @@ namespace SteamWorkshopSynchronizer
         {
             var config = new ConfigurationBuilder()
                 .AddJsonFile("appsettings.json", false)
-                .AddCommandLine(args)
+                .AddCommandLine(args, SteamWorkshopSynchronizerSettingsReader.SwitchMappings)
                 .Build();
+            
             
             var collection = new ServiceCollection();
             collection.AddLogging(x =>
@@ -41,6 +42,13 @@ namespace SteamWorkshopSynchronizer
             using var container = new Container(rules=> rules.WithMicrosoftDependencyInjectionRules()).WithDependencyInjectionAdapter(collection);
             SteamWorkshopSynchronizerConfigurator.Configure(container, settings);
             using var cts = new CancellationTokenSource();
+
+            Console.CancelKeyPress += delegate(object sender, ConsoleCancelEventArgs args)
+            {
+                args.Cancel = true;
+                cts?.Cancel();
+            };
+            
             using var mainScope = container.CreateScope();
             {
                 try

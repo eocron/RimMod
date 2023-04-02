@@ -9,6 +9,12 @@ namespace SteamWorkshopSynchronizer.Settings
 {
     public static class SteamWorkshopSynchronizerSettingsReader
     {
+        public static readonly IDictionary<string, string> SwitchMappings = new Dictionary<string, string>()
+        {
+            { "--target", nameof(SteamWorkshopSynchronizerConfig.TargetFolderPath) },
+            { "--mode", nameof(SteamWorkshopSynchronizerConfig.Mode) },
+            { "--source", nameof(SteamWorkshopSynchronizerConfig.WorkshopItemsFilePath) }
+        };
         public static SteamWorkshopSynchronizerSettings Read(IConfiguration configuration)
         {
             var cfg = configuration.Get<SteamWorkshopSynchronizerConfig>();
@@ -23,6 +29,9 @@ namespace SteamWorkshopSynchronizer.Settings
                 fileIds.AddRange(cfg.AllFileIds);
             }
             var allFileIds = fileIds.Distinct().Where(x => x > 0).OrderBy(x => x).ToArray();
+
+            cfg.SteamCmd.TempFolderPath ??= "./steamcmd/temp";
+            cfg.SteamCmd.FolderPath ??= "./steamcmd/bin";
             return new SteamWorkshopSynchronizerSettings
             {
                 AllFileIds = allFileIds,

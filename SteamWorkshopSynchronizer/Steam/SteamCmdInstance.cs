@@ -91,10 +91,7 @@ namespace SteamWorkshopSynchronizer.Steam
         {
             try
             {
-                if (!_process.WaitForExit(5000))
-                {
-                    _process.Kill();
-                }
+                _process.Kill(true);
             }
             catch
             {

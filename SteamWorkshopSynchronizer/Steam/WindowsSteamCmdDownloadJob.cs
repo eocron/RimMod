@@ -18,6 +18,7 @@ namespace SteamWorkshopSynchronizer.Steam
         private readonly string _httpClientName;
         private readonly ILogger _logger;
         private readonly bool _forceUpdate;
+        private readonly string _jobName;
 
         public WindowsSteamCmdDownloadJob(IHttpClientFactory httpClientFactory, string httpClientName, ILogger logger, Uri steamCmdDownloadLink, string steamCmdTargetFolder, string tmpFolder, bool forceUpdate)
         {
@@ -28,6 +29,7 @@ namespace SteamWorkshopSynchronizer.Steam
             _httpClientName = httpClientName;
             _logger = logger;
             _forceUpdate = forceUpdate;
+            _jobName = DateTime.UtcNow.Ticks.ToString();
         }
 
         public async Task RunAsync(CancellationToken ct)
@@ -41,7 +43,7 @@ namespace SteamWorkshopSynchronizer.Steam
 
         private async Task UpdateSteamCmdAsync(string targetFolder, CancellationToken ct)
         {
-            var tmpFolder = Path.Combine(_tmpFolder, "steamcmd_tmp_download", DateTime.UtcNow.ToFileTime().ToString());
+            var tmpFolder = Path.Combine(_tmpFolder, "steamcmd_tmp_download", _jobName);
             Directory.CreateDirectory(tmpFolder);
             try
             {
@@ -53,22 +55,49 @@ namespace SteamWorkshopSynchronizer.Steam
                 Directory.CreateDirectory(tmpExtractedFolder);
                 _logger.LogInformation("Extracting SteamCMD...");
                 ExtractFiles(tmpZipFilePath, tmpExtractedFolder);
+                File.Delete(tmpZipFilePath);
+                
+                _logger.LogInformation("Running SteamCMD for the first time...");
+                await new SteamCmdBuilder()
+                    .WithExePath(Path.Combine(tmpExtractedFolder, "steamcmd.exe"))
+                    .WithLogger(_logger)
+                    .AddCommand("validate")
+                    .ExecuteAsync(ct)
+                    .ConfigureAwait(false);
 
-                DeleteDirectoryIfExists(targetFolder);
-                Directory.Move(tmpExtractedFolder, targetFolder);
+                await DeleteDirectoryIfExists(targetFolder, ct).ConfigureAwait(false);
+                await ErrorGuardAsync(() => Directory.Move(tmpExtractedFolder, targetFolder), ct).ConfigureAwait(false);
                 _logger.LogInformation("SteamCMD downloaded.");
             }
             finally
             {
-                DeleteDirectoryIfExists(tmpFolder);
+                using var cts = new CancellationTokenSource(5000);
+                await DeleteDirectoryIfExists(tmpFolder, cts.Token).ConfigureAwait(false);
             }
         }
         
-        private static void DeleteDirectoryIfExists(string dirPath)
+        private async Task DeleteDirectoryIfExists(string dirPath, CancellationToken ct)
         {
             if (Directory.Exists(dirPath))
             {
-                Directory.Delete(dirPath, true);
+                await ErrorGuardAsync(() => Directory.Delete(dirPath, true), ct).ConfigureAwait(false);
+            }
+        }
+
+        private async Task ErrorGuardAsync(Action action, CancellationToken ct)
+        {
+            while (true)
+            {
+                try
+                {
+                    action();
+                    return;
+                }
+                catch(Exception e)
+                {
+                    _logger.LogWarning(e.Message);
+                }
+                await Task.Delay(1000, ct).ConfigureAwait(false);
             }
         }
 

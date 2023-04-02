@@ -17,6 +17,7 @@ namespace SteamWorkshopSynchronizer.Core
         }
         public async Task RunAsync(CancellationToken ct)
         {
+            ct.ThrowIfCancellationRequested();
             if (_inParallel)
             {
                 await Task.WhenAll(_jobs.Select(x => x.RunAsync(ct))).ConfigureAwait(false);
@@ -25,6 +26,7 @@ namespace SteamWorkshopSynchronizer.Core
             {
                 foreach (var job in _jobs)
                 {
+                    ct.ThrowIfCancellationRequested();
                     await job.RunAsync(ct).ConfigureAwait(false);
                 }
             }
