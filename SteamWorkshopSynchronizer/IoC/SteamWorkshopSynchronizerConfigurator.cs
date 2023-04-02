@@ -78,7 +78,10 @@ namespace SteamWorkshopSynchronizer.IoC
                 .RegisterSingleton<IAsyncJob>(
                     r => new CompoundAsyncJob(
                         false,
-                        r.Resolve<IAsyncJob>(nameof(WindowsSteamCmdDownloadJob)),
+                        new RestartUntilSuccessAsyncJob(
+                            r.Resolve<IAsyncJob>(nameof(WindowsSteamCmdDownloadJob)),
+                            r.Resolve<ILogger<WindowsSteamCmdDownloadJob>>(),
+                            TimeSpan.FromSeconds(1)),
                         r.Resolve<IAsyncJob>(
                             nameof(TableEntitySynchronizationAsyncCommand<SteamWorkshopTableEntity>))));
         }

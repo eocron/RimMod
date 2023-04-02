@@ -35,7 +35,7 @@ namespace SteamWorkshopSynchronizer.Core
             try
             {
                 await _inner.UpdateEntityAsync(entity, ct).ConfigureAwait(false);
-                _logger.LogInformation("Updated {key}", entity.EscapedTitle);
+                _logger.LogInformation("Updated {title}", entity.EscapedTitle);
             }
             catch (Exception e)
             {
@@ -49,7 +49,7 @@ namespace SteamWorkshopSynchronizer.Core
             try
             {
                 await _inner.CreateEntityAsync(entity, ct).ConfigureAwait(false);
-                _logger.LogInformation("Created {key}", entity.EscapedTitle);
+                _logger.LogInformation("Created {title}", entity.EscapedTitle);
             }
             catch (Exception e)
             {

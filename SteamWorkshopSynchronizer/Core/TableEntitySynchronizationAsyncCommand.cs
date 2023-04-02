@@ -8,7 +8,7 @@ using SteamWorkshopSynchronizer.Settings;
 
 namespace SteamWorkshopSynchronizer.Core
 {
-    public class TableEntitySynchronizationAsyncCommand<TEntityInfo> : IAsyncJob
+    public sealed class TableEntitySynchronizationAsyncCommand<TEntityInfo> : IAsyncJob
         where TEntityInfo : class, IFileTableEntity
     {
         private readonly ITableEntityProvider<TEntityInfo> _sourceProvider;
@@ -53,23 +53,25 @@ namespace SteamWorkshopSynchronizer.Core
                 ? fjoin[SynchronizationMode.Update].Select(x => x.source).ToArray()
                 : Array.Empty<TEntityInfo>();
 
-            _logger.LogInformation("ToDelete: {toDelete}, ToCreate: {toCreate}, ToUpdate: {toUpdate}", toDelete.Length,
-                toCreate.Length, toUpdate.Length);
+            _logger.LogInformation("ToDelete: {toDelete}, ToCreate: {toCreate}, ToUpdate: {toUpdate}", 
+                toDelete.Length, toCreate.Length, toUpdate.Length);
 
             await RunForEachAsync(toCreate, tableEntity => OnCreateEntityAsync(tableEntity, ct)).ConfigureAwait(false);
             await RunForEachAsync(toUpdate, tableEntity => OnUpdateEntityAsync(tableEntity, ct)).ConfigureAwait(false);
             await RunForEachAsync(toDelete, tableEntity => OnDeleteEntityAsync(tableEntity, ct)).ConfigureAwait(false);
         }
 
-        protected virtual async Task OnCreateEntityAsync(TEntityInfo tableEntity, CancellationToken ct)
+        private async Task OnCreateEntityAsync(TEntityInfo tableEntity, CancellationToken ct)
         {
             await _targetManager.CreateEntityAsync(tableEntity, ct).ConfigureAwait(false);
         }
-        protected virtual async Task OnUpdateEntityAsync(TEntityInfo tableEntity, CancellationToken ct)
+
+        private async Task OnUpdateEntityAsync(TEntityInfo tableEntity, CancellationToken ct)
         {
             await _targetManager.UpdateEntityAsync(tableEntity, ct).ConfigureAwait(false);
         }
-        protected virtual async Task OnDeleteEntityAsync(TEntityInfo tableEntity, CancellationToken ct)
+
+        private async Task OnDeleteEntityAsync(TEntityInfo tableEntity, CancellationToken ct)
         {
             await _targetManager.DeleteEntityAsync(tableEntity.Key, ct).ConfigureAwait(false);
         }
