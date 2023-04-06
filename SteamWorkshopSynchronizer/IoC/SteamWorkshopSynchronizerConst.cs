@@ -1,9 +1,8 @@
-﻿namespace SteamWorkshopSynchronizer
+﻿namespace SteamWorkshopSynchronizer.IoC
 {
-    public static class ApplicationConst
+    public static class SteamWorkshopSynchronizerConst
     {
         public const string SteamApiHttpClientName = nameof(SteamApiHttpClientName);
-        public const string EntitiesNamespace = "Entities";
         public static string SteamCmdDownloadHttpClientName = nameof(SteamCmdDownloadHttpClientName);
     }
 }

@@ -8,7 +8,7 @@ using SteamWorkshopSynchronizer.Settings;
 
 namespace SteamWorkshopSynchronizer.Core
 {
-    public sealed class TableEntitySynchronizationAsyncCommand<TEntityInfo> : IAsyncJob
+    public sealed class TableEntitySynchronizationAsyncJob<TEntityInfo> : IAsyncJob
         where TEntityInfo : class, IFileTableEntity
     {
         private readonly ITableEntityProvider<TEntityInfo> _sourceProvider;
@@ -18,7 +18,7 @@ namespace SteamWorkshopSynchronizer.Core
         private readonly bool _inParallel;
         private readonly ILogger _logger;
 
-        public TableEntitySynchronizationAsyncCommand(
+        public TableEntitySynchronizationAsyncJob(
             ITableEntityProvider<TEntityInfo> sourceProvider,
             ITableEntityProvider<TEntityInfo> targetProvider,
             ITableEntityManager<TEntityInfo> targetManager,

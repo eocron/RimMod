@@ -25,7 +25,7 @@ namespace SteamWorkshopSynchronizer.UnitTests
             _targetProvider = new Mock<ITableEntityProvider<SteamWorkshopTableEntity>>();
             _targetManager = new Mock<ITableEntityManager<SteamWorkshopTableEntity>>();
             _mode = SynchronizationMode.Create | SynchronizationMode.Delete | SynchronizationMode.Update;
-            _sync = new TableEntitySynchronizationAsyncCommand<SteamWorkshopTableEntity>(
+            _sync = new TableEntitySynchronizationAsyncJob<SteamWorkshopTableEntity>(
                 _sourceProvider.Object,
                 _targetProvider.Object, 
                 _targetManager.Object,

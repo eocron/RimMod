@@ -2,7 +2,7 @@
 
 namespace SteamWorkshopSynchronizer.Steam.Contract
 {
-    [DataContract(Namespace = ApplicationConst.EntitiesNamespace, Name = "SteamItemTag")]
+    [DataContract(Namespace = SteamNamespaces.Entities, Name = "SteamItemTag")]
     public class WorkshopItemTag
     {
         [DataMember(Name = "tag")]

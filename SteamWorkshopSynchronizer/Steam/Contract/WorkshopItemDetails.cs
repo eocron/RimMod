@@ -5,7 +5,7 @@ using System.Runtime.Serialization;
 
 namespace SteamWorkshopSynchronizer.Steam.Contract
 {
-    [DataContract(Namespace = ApplicationConst.EntitiesNamespace, Name = "SteamItemDetails")]
+    [DataContract(Namespace = SteamNamespaces.Entities, Name = "SteamItemDetails")]
     public class WorkshopItemDetails
     {
         [DataMember(Name = "publishedfileid")]
