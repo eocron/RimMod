@@ -13,17 +13,16 @@ using SteamWorkshopSynchronizer.Settings;
 
 namespace SteamWorkshopSynchronizer
 {
-
-    class Program
+    public sealed class Program
     {
-        static async Task Main(string[] args)
+        public static async Task Main(string[] args)
         {
             var config = new ConfigurationBuilder()
                 .AddJsonFile("appsettings.json", false)
+                .AddJsonFile($"appsettings.{GetEnvironment(args)}.json", true)
                 .AddCommandLine(args, SteamWorkshopSynchronizerSettingsReader.SwitchMappings)
                 .Build();
-            
-            
+
             var collection = new ServiceCollection();
             collection.AddLogging(x =>
             {
@@ -39,7 +38,8 @@ namespace SteamWorkshopSynchronizer
             collection.AddSingleton(config);
             var settings = SteamWorkshopSynchronizerSettingsReader.Read(config);
             SteamWorkshopSynchronizerConfigurator.Configure(collection);
-            using var container = new Container(rules=> rules.WithMicrosoftDependencyInjectionRules()).WithDependencyInjectionAdapter(collection);
+            using var container = new Container(rules => rules.WithMicrosoftDependencyInjectionRules())
+                .WithDependencyInjectionAdapter(collection);
             SteamWorkshopSynchronizerConfigurator.Configure(container, settings);
             using var cts = new CancellationTokenSource();
 
@@ -48,23 +48,29 @@ namespace SteamWorkshopSynchronizer
                 args.Cancel = true;
                 cts?.Cancel();
             };
-            
+
             using var mainScope = container.CreateScope();
+
+            try
             {
-                try
-                {
-                    await container.Resolve<IAsyncJob>().RunAsync(cts.Token);
-                }
-                catch (Exception e)
-                {
-                    container.Resolve<ILogger<Program>>().LogError(e.ToString());
-                    throw;
-                }
-                finally
-                {
-                    cts.Cancel();
-                }
+                await container.Resolve<IAsyncJob>().RunAsync(cts.Token);
             }
+            catch (Exception e)
+            {
+                container.Resolve<ILogger<Program>>().LogError(e.ToString());
+                throw;
+            }
+            finally
+            {
+                cts.Cancel();
+            }
+        }
+
+        private static string GetEnvironment(string[] args)
+        {
+            return new ConfigurationBuilder()
+                .AddCommandLine(args)
+                .Build()["env"];
         }
     }
 }

@@ -37,7 +37,8 @@ namespace SteamWorkshopSynchronizer.Settings
                 AllFileIds = allFileIds,
                 Mode = cfg.Mode,
                 SteamCmd = cfg.SteamCmd,
-                TargetFolderPath = cfg.TargetFolderPath
+                TargetFolderPath = cfg.TargetFolderPath,
+                DigestFilePath = cfg.TargetDigestFilePath ?? (Path.Combine(cfg.TargetFolderPath, "sws_digest.txt"))
             };
         }
 

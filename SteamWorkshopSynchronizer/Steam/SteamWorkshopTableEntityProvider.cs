@@ -66,7 +66,9 @@ namespace SteamWorkshopSynchronizer.Steam
                 AppId = details.AppId,
                 LastUpdated = lastUpdated,
                 ETag = lastUpdated.Ticks.ToString(),
-                EscapedTitle = details.EscapedTitle
+                Title = details.Title,
+                EscapedTitle = details.EscapedTitle,
+                Tags = details.Tags?.Select(x=> x.Tag).ToArray() ?? Array.Empty<string>()
             };
         }
     }

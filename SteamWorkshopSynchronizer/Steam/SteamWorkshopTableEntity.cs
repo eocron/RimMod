@@ -11,5 +11,7 @@ namespace SteamWorkshopSynchronizer.Steam
         public long FileId { get; set; }
         public int AppId { get; set; }
         public DateTime LastUpdated { get; set; }
+        public string Title { get; set; }
+        public string[] Tags { get; set; }
     }
 }

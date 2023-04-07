@@ -76,14 +76,20 @@ namespace SteamWorkshopSynchronizer.IoC
                         r.Resolve<ILogger<TableEntitySynchronizationAsyncJob<SteamWorkshopTableEntity>>>()),
                     nameof(TableEntitySynchronizationAsyncJob<SteamWorkshopTableEntity>))
                 .RegisterSingleton<IAsyncJob>(
+                    r=> new SteamTargetDigestGenerationAsyncJob(
+                        r.Resolve<ITableEntityProvider<SteamWorkshopTableEntity>>(targetName),
+                        settings.DigestFilePath,
+                        r.Resolve<ILogger<SteamTargetDigestGenerationAsyncJob>>()),
+                    name: nameof(SteamTargetDigestGenerationAsyncJob))
+                .RegisterSingleton<IAsyncJob>(
                     r => new CompoundAsyncJob(
                         false,
                         new RestartUntilSuccessAsyncJob(
                             r.Resolve<IAsyncJob>(nameof(WindowsSteamCmdDownloadJob)),
                             r.Resolve<ILogger<WindowsSteamCmdDownloadJob>>(),
                             TimeSpan.FromSeconds(1)),
-                        r.Resolve<IAsyncJob>(
-                            nameof(TableEntitySynchronizationAsyncJob<SteamWorkshopTableEntity>))));
+                        r.Resolve<IAsyncJob>(nameof(TableEntitySynchronizationAsyncJob<SteamWorkshopTableEntity>)),
+                        r.Resolve<IAsyncJob>(nameof(SteamTargetDigestGenerationAsyncJob))));
         }
     }
 }

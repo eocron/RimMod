@@ -6,5 +6,6 @@
         public long[] AllFileIds { get; set; }
         public string TargetFolderPath { get; set; }
         public SteamCmdSettings SteamCmd { get; set; }
+        public string DigestFilePath { get; set; }
     }
 }
