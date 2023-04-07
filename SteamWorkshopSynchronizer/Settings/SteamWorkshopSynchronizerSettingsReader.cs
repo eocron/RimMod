@@ -9,12 +9,6 @@ namespace SteamWorkshopSynchronizer.Settings
 {
     public static class SteamWorkshopSynchronizerSettingsReader
     {
-        public static readonly IDictionary<string, string> SwitchMappings = new Dictionary<string, string>()
-        {
-            { "--target", nameof(SteamWorkshopSynchronizerConfig.TargetFolderPath) },
-            { "--mode", nameof(SteamWorkshopSynchronizerConfig.Mode) },
-            { "--source", nameof(SteamWorkshopSynchronizerConfig.WorkshopItemsFilePath) }
-        };
         public static SteamWorkshopSynchronizerSettings Read(IConfiguration configuration)
         {
             var cfg = configuration.Get<SteamWorkshopSynchronizerConfig>();
